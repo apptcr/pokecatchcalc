@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PokéCatch: Unlimited List</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --primary: #FF5350;
+      --accent: #3b4cca;
+      --text-dark: #2c3e50;
+      --text-gray: #7f8c8d;
+      --hp-green: #4bc05b;
+      --hp-yellow: #f5ac0f;
+      --hp-red: #ff5040;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Kanit', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 30px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+      position: relative;
+      overflow: visible !important; 
+      backdrop-filter: blur(10px);
+    }
+
+    header { text-align: center; margin-bottom: 25px; }
+    h1 { font-size: 1.8em; color: var(--accent); font-weight: 700; margin-bottom: 5px;}
+    p.subtitle { font-size: 0.9em; color: var(--text-gray); }
+
+    /* Display Area */
+    .poke-display {
+      display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; min-height: 150px;
+      position: relative; 
+      z-index: 100;
+    }
+    .poke-img-wrapper {
+      width: 120px; height: 120px; background: rgba(0,0,0,0.05);
+      border-radius: 50%; display: flex; justify-content: center; align-items: center;
+      margin-bottom: 10px; position: relative;
+    }
+    .poke-img { width: 100%; height: 100%; object-fit: contain; z-index: 2; transition: 0.3s;}
+    .loading-spinner {
+      position: absolute; width: 30px; height: 30px; border: 3px solid #ddd;
+      border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; display: none;
+    }
+
+    /* --- Search Box with Arrow --- */
+    .search-wrapper {
+      width: 100%;
+      position: relative;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+    }
+    
+    .search-input {
+      width: 100%; 
+      padding: 12px 45px 12px 15px;
+      border-radius: 12px; border: 2px solid #eee;
+      font-family: 'Kanit'; font-size: 1em; background: #f9f9f9; transition: 0.3s;
+    }
+    .search-input:focus { outline: none; border-color: var(--accent); background: white; }
+
+    /* The Arrow Button */
+    .dropdown-arrow {
+      position: absolute;
+      right: 10px;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      color: #999;
+      transition: 0.2s;
+      border-radius: 50%;
+    }
+    .dropdown-arrow:hover { background: #eee; color: var(--accent); }
+    .dropdown-arrow svg { width: 16px; height: 16px; fill: currentColor; }
+
+    /* Custom Dropdown List */
+    .suggestions-list {
+      position: absolute;
+      top: 105%;
+      left: 0; width: 100%;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      max-height: 300px; /* เพิ่มความสูงให้เห็นเยอะขึ้น */
+      overflow-y: auto;
+      list-style: none;
+      display: none;
+      z-index: 10000;
+      border: 1px solid #eee;
+    }
+    .suggestions-list.active { display: block; }
+    .suggestions-list li {
+      padding: 12px 15px;
+      cursor: pointer;
+      border-bottom: 1px solid #f5f5f5;
+      color: #333;
+      text-transform: capitalize;
+      transition: background 0.1s;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .suggestions-list li:hover { background: #f0f4ff; color: var(--accent); font-weight: 600; }
+    
+    .suggestions-list::-webkit-scrollbar { width: 8px; }
+    .suggestions-list::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+    .suggestions-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+    .suggestions-list::-webkit-scrollbar-thumb:hover { background: #aaa; }
+
+    /* Controls */
+    .control-group { margin-bottom: 20px; position: relative; z-index: 1; }
+    .section-title {
+      font-size: 0.9em; font-weight: 600; margin-bottom: 8px; display: flex; justify-content: space-between;
+    }
+
+    .hp-container {
+      position: relative; height: 25px; background: #eee; border-radius: 15px; overflow: hidden;
+    }
+    .hp-fill { height: 100%; width: 100%; background: var(--hp-green); transition: 0.3s; border-radius: 15px 0 0 15px; }
+    input[type=range] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+
+    /* Grid & Images */
+    .grid-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .radio-card input { position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; z-index: 2; }
+    .card-content {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 8px; border: 2px solid #eee; border-radius: 10px; transition: 0.2s; height: 80px;
+    }
+    .radio-card input:checked + .card-content {
+      border-color: var(--accent); background: rgba(59, 76, 202, 0.05); color: var(--accent); font-weight: 600;
+    }
+    
+    .ball-icon { width: 36px; height: 36px; object-fit: contain; margin-bottom: 5px; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1)); }
+    .status-icon-group { display: flex; justify-content: center; gap: 2px; margin-bottom: 5px; }
+    .status-icon { width: 24px; height: 24px; object-fit: contain; }
+    .normal-icon { font-size: 24px; line-height: 24px; color: #ccc; }
+
+    /* Result Area */
+    .result-box {
+      background: #f8f9fa; border-radius: 20px; padding: 20px; text-align: center; margin-top: 20px;
+      position: relative; z-index: 1;
+    }
+    .percentage { font-size: 3em; font-weight: 700; color: var(--accent); line-height: 1; margin-bottom: 10px; }
+    .percentage span { font-size: 0.4em; color: var(--text-gray); }
+    
+    .sim-btn {
+      background: var(--primary); color: white; border: none; padding: 12px;
+      width: 100%; border-radius: 12px; font-size: 1.1em; font-weight: 600;
+      font-family: 'Kanit'; cursor: pointer; transition: 0.2s;
+      box-shadow: 0 5px 15px rgba(255, 83, 80, 0.3); margin-top: 10px;
+      position: relative; z-index: 10;
+      user-select: none;
+    }
+    .sim-btn:hover { background: #ff3330; transform: translateY(-2px); }
+    .sim-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+    .sim-btn:active { transform: scale(0.98); }
+
+    /* Overlay */
+    #overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(255,255,255,0.98); display: flex; justify-content: center;
+      align-items: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    #overlay.active { opacity: 1; pointer-events: all; }
+    
+    .pokeball-anim-container { display: flex; justify-content: center; height: 100px; align-items: center;}
+    .pokeball-anim-img { width: 80px; height: 80px; object-fit: contain; animation: shake 1s infinite; }
+
+    .msg-success { color: var(--hp-green); font-weight: 700; font-size: 1.5em; animation: popIn 0.3s; }
+    .msg-fail { color: var(--hp-red); font-weight: 700; font-size: 1.5em; animation: popIn 0.3s; }
+
+    @keyframes shake {
+      0% { transform: rotate(0deg); }
+      25% { transform: rotate(20deg); }
+      50% { transform: rotate(-20deg); }
+      75% { transform: rotate(10deg); }
+      100% { transform: rotate(0deg); }
+    }
+    @keyframes popIn {
+      0% { transform: scale(0); opacity: 0; }
+      80% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>PokéCatch Pro</h1>
+    <p class="subtitle">Ultimate Edition</p>
+  </header>
+
+  <div class="poke-display">
+    <div class="poke-img-wrapper">
+      <div class="loading-spinner" id="spinner"></div>
+      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="Pokemon" class="poke-img" id="poke-img">
+    </div>
+    
+    <div class="search-wrapper">
+      <input type="text" id="poke-search" class="search-input" placeholder="กำลังโหลดข้อมูล..." disabled autocomplete="off">
+      <div class="dropdown-arrow" id="toggle-arrow">
+        <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+      </div>
+      <ul id="suggestions" class="suggestions-list"></ul>
+    </div>
+    <div style="text-align:center; font-size:0.8em; color:#999; margin-top:5px;">
+        Base Catch Rate: <span id="cr-display">190</span>
+    </div>
+
+  </div>
+
+  <div class="control-group">
+    <div class="section-title">
+      <span>HP Remaining</span>
+      <span id="hp-val" style="color:var(--hp-green)">100%</span>
+    </div>
+    <div class="hp-container">
+      <div id="hp-fill" class="hp-fill"></div>
+      <input type="range" id="hp-slider" min="1" max="100" value="100">
+    </div>
+  </div>
+
+  <div class="control-group">
+    <div class="grid-options">
+      <label class="radio-card">
+        <input type="radio" name="ball" value="1" checked data-img="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png">
+        <div class="card-content">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" class="ball-icon" alt="Poké Ball">
+          <div style="font-size:0.8em; font-weight:600">Poké</div>
+        </div>
+      </label>
+      <label class="radio-card">
+        <input type="radio" name="ball" value="1.5" data-img="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png">
+        <div class="card-content">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png" class="ball-icon" alt="Great Ball">
+          <div style="font-size:0.8em; font-weight:600">Great</div>
+        </div>
+      </label>
+      <label class="radio-card">
+        <input type="radio" name="ball" value="2" data-img="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png">
+        <div class="card-content">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png" class="ball-icon" alt="Ultra Ball">
+          <div style="font-size:0.8em; font-weight:600">Ultra</div>
+        </div>
+      </label>
+    </div>
+    
+    <div class="grid-options" style="margin-top:8px;">
+      <label class="radio-card">
+        <input type="radio" name="status" value="1" checked>
+        <div class="card-content">
+          <div class="normal-icon">⚪</div>
+          <div style="font-size:0.7em; font-weight:600">Normal</div>
+        </div>
+      </label>
+      <label class="radio-card">
+        <input type="radio" name="status" value="1.5">
+        <div class="card-content">
+          <div class="status-icon-group">
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/burn-heal.png" class="status-icon" title="Burn">
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/antidote.png" class="status-icon" title="Poison">
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/paralyze-heal.png" class="status-icon" title="Paralysis">
+          </div>
+          <div style="font-size:0.7em; font-weight:600">Burn/Psn/Par</div>
+        </div>
+      </label>
+      <label class="radio-card">
+        <input type="radio" name="status" value="2.5">
+        <div class="card-content">
+          <div class="status-icon-group">
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/awakening.png" class="status-icon" title="Sleep">
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ice-heal.png" class="status-icon" title="Ice">
+          </div>
+          <div style="font-size:0.7em; font-weight:600">Sleep/Ice</div>
+        </div>
+      </label>
+    </div>
+  </div>
+
+  <div class="result-box">
+    <div class="percentage" id="result-percent">0<span>%</span></div>
+    <button class="sim-btn" id="btn-throw">🎮 ทดลองปาบอล (Simulate)</button>
+  </div>
+
+  <div id="overlay">
+    <div id="anim-content" style="text-align: center;"></div>
+  </div>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Global State
+  let currentBaseRate = 190; 
+  let currentProbability = 0; 
+  let allPokemonNames = [];
+
+  // DOM Elements
+  const searchInput = document.getElementById('poke-search');
+  const toggleArrow = document.getElementById('toggle-arrow');
+  const suggestionsList = document.getElementById('suggestions');
+  const imgEl = document.getElementById('poke-img');
+  const spinner = document.getElementById('spinner');
+  const crDisplay = document.getElementById('cr-display');
+  const hpSlider = document.getElementById('hp-slider');
+  const hpFill = document.getElementById('hp-fill');
+  const hpVal = document.getElementById('hp-val');
+  const resultEl = document.getElementById('result-percent');
+  const btnThrow = document.getElementById('btn-throw');
+  const overlay = document.getElementById('overlay');
+  const animContent = document.getElementById('anim-content');
+
+  // --- Functions ---
+
+  async function init() {
+    try {
+      const res = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1025');
+      const data = await res.json();
+      allPokemonNames = data.results.map(p => p.name);
+      
+      searchInput.disabled = false;
+      searchInput.placeholder = "เลือกหรือพิมพ์ชื่อโปเกมอน...";
+    } catch (e) { 
+      console.error("API Error", e);
+      searchInput.placeholder = "Error loading data";
+    }
+  }
+
+  async function fetchPokemonData(name) {
+    if (!name) return;
+    name = name.toLowerCase();
+    
+    spinner.style.display = 'block';
+    imgEl.style.opacity = '0.5';
+
+    try {
+      const speciesRes = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${name}`);
+      if(!speciesRes.ok) throw new Error('Not found');
+      const speciesData = await speciesRes.json();
+      
+      const pokeRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+      const pokeData = await pokeRes.json();
+
+      currentBaseRate = speciesData.capture_rate;
+      imgEl.src = pokeData.sprites.other['official-artwork'].front_default || pokeData.sprites.front_default;
+      crDisplay.textContent = currentBaseRate;
+      
+      searchInput.value = name.charAt(0).toUpperCase() + name.slice(1);
+      
+      calculate();
+
+    } catch (e) {
+      console.error(e);
+    } finally {
+      spinner.style.display = 'none';
+      imgEl.style.opacity = '1';
+    }
+  }
+
+  function calculate() {
+    try {
+      const hp = parseInt(hpSlider.value);
+      const ballEl = document.querySelector('input[name="ball"]:checked');
+      const statusEl = document.querySelector('input[name="status"]:checked');
+      if (!ballEl || !statusEl) return;
+
+      const ball = parseFloat(ballEl.value);
+      const status = parseFloat(statusEl.value);
+
+      hpFill.style.width = hp + '%';
+      hpVal.textContent = hp + '%';
+      if(hp < 20) { hpFill.style.background = 'var(--hp-red)'; hpVal.style.color = 'var(--hp-red)'; }
+      else if(hp < 50) { hpFill.style.background = 'var(--hp-yellow)'; hpVal.style.color = 'var(--hp-yellow)'; }
+      else { hpFill.style.background = 'var(--hp-green)'; hpVal.style.color = 'var(--hp-green)'; }
+
+      const maxHP = 100;
+      const curHP = hp;
+      let a = ((3 * maxHP - 2 * curHP) * currentBaseRate * ball) / (3 * maxHP) * status;
+      let prob = (a / 255) * 100;
+      if(prob > 100) prob = 100;
+      if(prob < 0) prob = 0;
+
+      currentProbability = prob;
+      resultEl.innerHTML = prob.toFixed(1) + '<span>%</span>';
+    } catch(err) { console.error("Calc Error:", err); }
+  }
+
+  function simulateThrow() {
+    const selectedBallEl = document.querySelector('input[name="ball"]:checked');
+    const ballImgUrl = selectedBallEl.getAttribute('data-img');
+
+    btnThrow.disabled = true;
+    overlay.classList.add('active');
+
+    animContent.innerHTML = `
+        <div class="pokeball-anim-container">
+            <img src="${ballImgUrl}" class="pokeball-anim-img" alt="shaking ball">
+        </div>
+        <div style="margin-top:20px; font-weight:600;">กำลังเขย่า...</div>
+    `;
+
+    setTimeout(() => {
+      const rand = Math.random() * 100;
+      const success = rand <= currentProbability;
+
+      if (success) {
+        animContent.innerHTML = '<div class="msg-success">✨ Gotcha! จับสำเร็จ! ✨</div>';
+      } else {
+        animContent.innerHTML = '<div class="msg-fail">💢 Argh! หลุดออกมาได้! 💢</div>';
+      }
+
+      setTimeout(() => {
+        overlay.classList.remove('active');
+        btnThrow.disabled = false;
+      }, 1500);
+
+    }, 2000);
+  }
+
+  // --- Logic for Dropdown ---
+  
+  function toggleDropdown() {
+    if (suggestionsList.classList.contains('active')) {
+      suggestionsList.classList.remove('active');
+    } else {
+      const val = searchInput.value;
+      updateSuggestions(val, true); // force show ALL
+    }
+  }
+
+  function updateSuggestions(val, forceShow = false) {
+    suggestionsList.innerHTML = '';
+    
+    // ถ้าไม่มีการบังคับโชว์ และไม่มีข้อความ ให้ซ่อน
+    if (!val && !forceShow) {
+      suggestionsList.classList.remove('active');
+      return;
+    }
+
+    let matches = [];
+    if (!val && forceShow) {
+      // ✅ แก้ไขตรงนี้: ถ้ากดปุ่มลูกศร (empty + forceShow) ให้โชว์ "ทั้งหมด"
+      matches = allPokemonNames; 
+    } else {
+      // ถ้าพิมพ์ค้นหา ให้กรองเอา
+      matches = allPokemonNames.filter(name => name.startsWith(val.toLowerCase()));
+    }
+    
+    // สร้าง List Items (ใช้ Fragment เพื่อประสิทธิภาพที่ดีขึ้นเล็กน้อย)
+    if (matches.length > 0) {
+      suggestionsList.classList.add('active');
+      
+      // Limit การแสดงผลใน DOM แค่ 100 ตัวแรกถ้ามันเยอะเกินไปเพื่อกันหน่วง
+      // แต่ถ้าอยากได้หมดจริงๆ ให้เอา .slice(0, 100) ออก
+      // ในที่นี้ผมใส่ไว้ 1025 (ทั้งหมด) เพราะ Browser ปัจจุบันรับไหว
+      matches.forEach(match => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${match.charAt(0).toUpperCase() + match.slice(1)}</span>`;
+        li.onclick = () => {
+          fetchPokemonData(match);
+          suggestionsList.classList.remove('active');
+        };
+        suggestionsList.appendChild(li);
+      });
+    } else {
+      suggestionsList.classList.remove('active');
+    }
+  }
+
+  // Event Listeners
+  toggleArrow.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleDropdown();
+  });
+
+  searchInput.addEventListener('input', (e) => updateSuggestions(e.target.value));
+  
+  // คลิกที่ Input ก็ให้เด้ง (Optional)
+  searchInput.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if(allPokemonNames.length > 0) updateSuggestions(searchInput.value, true);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-wrapper')) {
+      suggestionsList.classList.remove('active');
+    }
+  });
+
+  btnThrow.addEventListener('click', simulateThrow);
+  hpSlider.addEventListener('input', calculate);
+  document.querySelectorAll('input[type=radio]').forEach(r => r.addEventListener('change', calculate));
+
+  init();
+  calculate();
+});
+</script>
+</body>
+</html>
