@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PokéCatch: Final Sound Edition</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      --card-bg: #ffffff;
+      --primary: #FF5350;
+      --accent: #3b4cca;
+      --text-dark: #2c3e50;
+      --text-gray: #7f8c8d;
+      --hp-green: #4bc05b;
+      --hp-yellow: #f5ac0f;
+      --hp-red: #ff5040;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Kanit', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-dark);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      height: auto;
+      max-height: 95vh;
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 30px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 30px;
+      position: relative;
+    }
+
+    /* Left Panel */
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding-right: 30px;
+      border-right: 2px dashed #f0f0f0;
+    }
+
+    header { text-align: center; margin-bottom: 20px; }
+    h1 { font-size: 1.8em; color: var(--accent); font-weight: 800; line-height: 1.1; margin-bottom: 5px; }
+    p.subtitle { font-size: 0.9em; color: var(--text-gray); }
+
+    .poke-display {
+      display: flex; flex-direction: column; align-items: center; margin-bottom: 15px;
+      position: relative; z-index: 50; width: 100%;
+    }
+    .poke-img-wrapper {
+      width: 130px; height: 130px; background: #f8f9fa;
+      border-radius: 50%; display: flex; justify-content: center; align-items: center;
+      margin-bottom: 15px; border: 4px solid #fff;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .poke-img { width: 90%; height: 90%; object-fit: contain; }
+    
+    .info-badges { display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap; justify-content: center; }
+    .badge { font-size: 0.75em; padding: 3px 10px; border-radius: 15px; color: white; background: #999; font-weight: 600; text-transform: uppercase;}
+
+    /* Search Input */
+    .search-wrapper { width: 100%; position: relative; z-index: 100; margin-bottom: 5px; }
+    .search-input {
+      width: 100%; padding: 10px 40px 10px 15px; border-radius: 12px; border: 2px solid #eef2f5;
+      font-family: 'Kanit'; font-size: 1em; background: #f9fbfc; transition: 0.3s; cursor: text;
+    }
+    .search-input:focus { outline: none; border-color: var(--accent); background: white; }
+    
+    .dropdown-arrow { 
+      position: absolute; right: 5px; top: 5px; width: 30px; height: 30px;
+      display: flex; justify-content: center; align-items: center;
+      color: #a0aec0; cursor: pointer; border-radius: 50%; transition: 0.2s;
+    }
+    .dropdown-arrow:hover { background: #e2e8f0; color: var(--accent); }
+
+    .suggestions-list {
+      position: absolute; top: 105%; left: 0; width: 100%; background: white;
+      border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      max-height: 300px; overflow-y: auto; list-style: none; display: none;
+      z-index: 2000; border: 1px solid #eef2f5;
+    }
+    .suggestions-list.active { display: block; }
+    .suggestions-list li {
+      padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f7fafc;
+      color: #4a5568; text-transform: capitalize; font-size: 0.95em;
+    }
+    .suggestions-list li:hover { background: #ebf4ff; color: var(--accent); }
+
+    /* Result */
+    .result-section { text-align: center; width: 100%; margin-top: auto; }
+    .percentage { font-size: 4em; font-weight: 800; color: var(--accent); line-height: 1; margin: 10px 0; text-shadow: 0 4px 10px rgba(59,76,202,0.1); }
+    .percentage span { font-size: 0.4em; color: #a0aec0; font-weight: 600; }
+
+    .sim-btn {
+      background: var(--primary); color: white; border: none; padding: 14px;
+      width: 100%; border-radius: 14px; font-size: 1.1em; font-weight: 700;
+      font-family: 'Kanit'; cursor: pointer; transition: 0.2s;
+      box-shadow: 0 8px 20px rgba(255, 83, 80, 0.25);
+    }
+    .sim-btn:hover { background: #ff3835; transform: translateY(-2px); box-shadow: 0 12px 25px rgba(255, 83, 80, 0.35); }
+    .sim-btn:disabled { background: #cbd5e0; cursor: not-allowed; box-shadow: none; transform: none; }
+
+    /* Right Panel */
+    .right-panel {
+      display: flex; flex-direction: column; gap: 15px;
+      overflow-y: auto; padding-right: 5px;
+    }
+
+    .tabs-nav { display: flex; gap: 8px; margin-bottom: 5px; }
+    .tab-btn {
+      flex: 1; padding: 8px; border-radius: 12px; border: none; background: #f1f5f9;
+      color: #64748b; font-weight: 600; font-family: 'Kanit'; cursor: pointer; transition: 0.2s; font-size: 0.9em;
+    }
+    .tab-btn.active { background: var(--accent); color: white; }
+
+    .grid-options-balls { display: none; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .grid-options-balls.active { display: grid; }
+    
+    .radio-card { position: relative; }
+    .radio-card input { position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; z-index: 10; }
+    .card-content {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 5px; border: 2px solid #edf2f7; border-radius: 12px; transition: 0.2s; height: 70px;
+      background: #fff;
+    }
+    .radio-card input:checked + .card-content {
+      border-color: var(--accent); background: #ebf4ff; color: var(--accent); font-weight: 700;
+      box-shadow: 0 4px 10px rgba(59, 76, 202, 0.1);
+    }
+    .ball-icon { width: 32px; height: 32px; object-fit: contain; margin-bottom: 2px; }
+
+    .context-panel {
+      background: #f8fafc; padding: 10px; border-radius: 12px;
+      display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; align-items: center;
+      border: 1px solid #e2e8f0; min-height: 50px;
+    }
+    .context-msg { color: #718096; font-size: 0.9em; font-style: italic;}
+    .input-group { display: flex; align-items: center; gap: 8px; font-weight: 600; color: #4a5568; font-size: 0.9em; }
+    .tiny-input { width: 50px; padding: 4px; border-radius: 6px; border: 1px solid #cbd5e0; text-align: center; }
+
+    .section-label { font-size: 0.9em; font-weight: 700; color: #4a5568; margin-bottom: 5px; display: flex; justify-content: space-between;}
+    .hp-container { position: relative; height: 20px; background: #edf2f7; border-radius: 10px; overflow: hidden; margin-bottom: 15px; }
+    .hp-fill { height: 100%; width: 100%; background: var(--hp-green); transition: 0.3s; border-radius: 10px 0 0 10px; }
+    input[type=range] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+
+    .status-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    
+    .footer-tip { font-size: 0.8em; color: #a0aec0; text-align: right; margin-top: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Overlay */
+    #overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(255,255,255,0.95); display: flex; justify-content: center;
+      align-items: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.3s; border-radius: 24px;
+    }
+    #overlay.active { opacity: 1; pointer-events: all; }
+    .pokeball-anim-img { width: 100px; height: 100px; object-fit: contain; animation: none; }
+    /* Animation Keyframes defined in JS or CSS class toggles */
+    .shake-anim { animation: shake 0.5s ease-in-out infinite; }
+    
+    .loading-spinner { position: absolute; width: 30px; height: 30px; border: 3px solid #e2e8f0; border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; display: none; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(15deg); } 50% { transform: rotate(0deg); } 75% { transform: rotate(-15deg); } 100% { transform: rotate(0deg); } }
+    
+    .toggle-switch { position: relative; display: inline-block; width: 36px; height: 20px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e0; transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--accent); }
+    input:checked + .slider:before { transform: translateX(16px); }
+    .status-icon-group { display: flex; justify-content: center; gap: 2px; }
+    .status-icon { width: 18px; height: 18px; object-fit: contain; }
+
+    /* --- CUSTOM TOOLTIP --- */
+    .custom-tooltip {
+      position: fixed;
+      background: rgba(30, 41, 59, 0.95);
+      color: white;
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-size: 0.85em;
+      pointer-events: none;
+      /* แก้ไข Z-Index ให้สูงกว่าทุกอย่างในจักรวาล */
+      z-index: 999999; 
+      opacity: 0;
+      transition: opacity 0.15s;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      max-width: 250px;
+      line-height: 1.5;
+      text-align: center;
+      transform: translate(-50%, -100%); /* Center above cursor */
+      margin-top: -10px;
+    }
+    .custom-tooltip.visible { opacity: 1; }
+
+    @media (max-width: 800px) {
+      body { height: auto; overflow: auto; display: block;}
+      .container { grid-template-columns: 1fr; height: auto; max-height: none; }
+      .left-panel { border-right: none; border-bottom: 2px dashed #f0f0f0; padding-right: 0; padding-bottom: 20px; margin-bottom: 20px;}
+    }
+  </style>
+</head>
+<body>
+
+<div id="custom-tooltip" class="custom-tooltip"></div>
+
+<div class="container">
+  
+  <div class="left-panel">
+    <header>
+      <h1>PokéCatch Sim</h1>
+      <p class="subtitle">ระบบคำนวณโอกาสจับโปเกมอน</p>
+    </header>
+
+    <div class="poke-display">
+      <div class="poke-img-wrapper">
+        <div class="loading-spinner" id="spinner"></div>
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="Pokemon" class="poke-img" id="poke-img">
+      </div>
+      <div class="info-badges" id="info-badges">
+        <span class="badge" style="background:#F7D02C;">Electric</span>
+      </div>
+      
+      <div class="search-wrapper">
+        <input type="text" id="poke-search" class="search-input" placeholder="พิมพ์ชื่อ..." disabled autocomplete="off">
+        <div class="dropdown-arrow" id="toggle-arrow">▼</div>
+        <ul id="suggestions" class="suggestions-list"></ul>
+      </div>
+      <div style="font-size:0.8em; color:#a0aec0; margin-top:5px;">
+        เรท: <span id="cr-display" style="color:var(--text-dark)">190</span> | น้ำหนัก: <span id="weight-display" style="color:var(--text-dark)">6.0</span>kg
+      </div>
+    </div>
+
+    <div class="result-section">
+      <div class="percentage" id="result-percent">0<span>%</span></div>
+      <button class="sim-btn" id="btn-throw">ทดลองปาบอล</button>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="tabs-nav">
+      <button class="tab-btn active" onclick="switchTab('basic')">พื้นฐาน</button>
+      <button class="tab-btn" onclick="switchTab('tech')">เทคนิค</button>
+      <button class="tab-btn" onclick="switchTab('special')">เฉพาะทาง</button>
+      <button class="tab-btn" onclick="switchTab('cosmetic')">สวยงาม</button>
+    </div>
+
+    <div id="grid-basic" class="grid-options-balls active">
+      <label class="radio-card" data-tooltip="บอลมาตรฐานสำหรับจับโปเกมอน (x1)"><input type="radio" name="ball" value="poke" checked data-img="poke-ball"><div class="card-content"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" class="ball-icon"><div style="font-size:0.7em">Poké Ball</div></div></label>
+      <label class="radio-card" data-tooltip="บอลที่มีประสิทธิภาพดีกว่า Poké Ball (x1.5)"><input type="radio" name="ball" value="great" data-img="great-ball"><div class="card-content"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png" class="ball-icon"><div style="font-size:0.7em">Great Ball</div></div></label>
+      <label class="radio-card" data-tooltip="บอลที่มีประสิทธิภาพสูงมาก (x2)"><input type="radio" name="ball" value="ultra" data-img="ultra-ball"><div class="card-content"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png" class="ball-icon"><div style="font-size:0.7em">Ultra Ball</div></div></label>
+      <label class="radio-card" data-tooltip="บอลที่จับโปเกมอนได้แน่นอน 100% โดยไม่มีเงื่อนไข"><input type="radio" name="ball" value="master" data-img="master-ball"><div class="card-content"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png" class="ball-icon"><div style="font-size:0.7em; color:purple">Master Ball</div></div></label>
+    </div>
+
+    <div id="grid-tech" class="grid-options-balls">
+      <label class="radio-card" data-tooltip="บอลที่จับง่ายมากหากใช้ในเทิร์นแรกของการต่อสู้ (x5)"><input type="radio" name="ball" value="quick" data-img="quick-ball"><div class="card-content"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/quick-ball.png" class="ball-icon"><div style="font-size:0.7em">Quick Ball</div></div></label>
+      <label class="radio-card" data-tooltip="บอลที่จับง่ายในเวลากลางคืน หรือในถ้ำ (x3)"><input type="radio" name="ball" value="dusk" data-img="dusk-ball"><div class="card-content"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dusk-ball.png" class="ball-icon"><div style="font-size:0.7em">Dusk Ball</div></div></label>
+      <label class="radio-card" data-tooltip="บอลที่มีประสิทธิภาพสูงขึ้นตามจำนวนเทิร์นที่ผ่านไป (สูงสุด x4)"><input type="radio" name="ball" value="timer" data-img="timer-ball"><div class="card-content"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/timer-ball.png" class="ball-icon"><div style="font-size:0.7em">Timer Ball</div></div></label>
+      <label class="radio-card" data-tooltip="บอลที่จับง่ายขึ้น 3.5 เท่า ถ้าเป้าหมายเป็นธาตุน้ำ (Water) หรือแมลง (Bug)"><input type="radio" name="ball" value="net" data-img="net-ball"><div class="card-content"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/net-ball.png" class="ball-icon"><div style="font-size:0.7em">Net Ball</div></div></label>
+    </div>
+
+    <div id="grid-special" class="grid-options-balls">
+      <label class="radio-card" data-tooltip="บอลสำหรับจับโปเกมอนที่มีน้ำหนักตัวมาก (ยิ่งหนักยิ่งจับง่าย)"><input type="radio" name="ball" value="heavy" data-img="heavy-ball"><div class="card-content"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/heavy-ball.png" class="ball-icon"><div style="font-size:0.7em">Heavy Ball</div></div></label>
+      <label class="radio-card" data-tooltip="บอลที่จับง่ายขึ้นถ้าโปเกมอนของเรามีเลเวลสูงกว่าศัตรู"><input type="radio" name="ball" value="level" data-img="level-ball"><div class="card-content"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/level-ball.png" class="ball-icon"><div style="font-size:0.7em">Level Ball</div></div></label>
+      <label class="radio-card" data-tooltip="บอลที่จับง่ายมาก (x8) ถ้าเป้าหมายเป็นเพศตรงข้ามและชนิดเดียวกัน"><input type="radio" name="ball" value="love" data-img="love-ball"><div class="card-content"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/love-ball.png" class="ball-icon"><div style="font-size:0.7em">Love Ball</div></div></label>
+      <label class="radio-card" data-tooltip="บอลที่จับง่ายขึ้นถ้าเป้าหมายมีความเร็วสูง (Speed >= 100)"><input type="radio" name="ball" value="fast" data-img="fast-ball"><div class="card-content"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/fast-ball.png" class="ball-icon"><div style="font-size:0.7em">Fast Ball</div></div></label>
+    </div>
+
+    <div id="grid-cosmetic" class="grid-options-balls">
+      <label class="radio-card" data-tooltip="บอลหรูหรา จับแล้วโปเกมอนจะเชื่องไวขึ้น (จับยากเท่า Poké Ball)"><input type="radio" name="ball" value="luxury" data-img="luxury-ball"><div class="card-content"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/luxury-ball.png" class="ball-icon"><div style="font-size:0.7em">Luxury Ball</div></div></label>
+      <label class="radio-card" data-tooltip="บอลพิเศษสีขาว สำหรับฉลองโอกาสพิเศษ (จับยากเท่า Poké Ball)"><input type="radio" name="ball" value="premier" data-img="premier-ball"><div class="card-content"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/premier-ball.png" class="ball-icon"><div style="font-size:0.7em">Premier Ball</div></div></label>
+      <label class="radio-card" data-tooltip="บอลที่จับแล้วช่วยฟื้นเลือดและสถานะให้โปเกมอนทันที (จับยากเท่า Poké Ball)"><input type="radio" name="ball" value="heal" data-img="heal-ball"><div class="card-content"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/heal-ball.png" class="ball-icon"><div style="font-size:0.7em">Heal Ball</div></div></label>
+      <label class="radio-card" data-tooltip="บอลที่จับง่ายถ้าเป้าหมายมีเลเวลต่ำ (จับเลเวลสูงๆ ยาก)"><input type="radio" name="ball" value="nest" data-img="nest-ball"><div class="card-content"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/nest-ball.png" class="ball-icon"><div style="font-size:0.7em">Nest Ball</div></div></label>
+    </div>
+
+    <div id="context-panel" class="context-panel">
+      <span class="context-msg">เลือกบอลด้านบนเพื่อปรับแต่ง</span>
+    </div>
+
+    <div>
+      <div class="section-label">สถานะ (Status)</div>
+      <div class="status-grid">
+        <label class="radio-card" data-tooltip="ไม่มีสถานะผิดปกติ"><input type="radio" name="status" value="1" checked><div class="card-content" style="height:50px"><div style="font-size:1.2em">⚪</div><div style="font-size:0.7em">Normal</div></div></label>
+        <label class="radio-card" data-tooltip="ติดสถานะ : ชา (Paralysis) / ไหม้ (Burn) / พิษ (Poison)"><input type="radio" name="status" value="1.5"><div class="card-content" style="height:50px"><div class="status-icon-group"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/paralyze-heal.png" class="status-icon"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/burn-heal.png" class="status-icon"></div><div style="font-size:0.7em">x1.5</div></div></label>
+        <label class="radio-card" data-tooltip="ติดสถานะ : หลับ (Sleep) / แข็ง (Freeze)"><input type="radio" name="status" value="2.5"><div class="card-content" style="height:50px"><div class="status-icon-group"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ice-heal.png" class="status-icon"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/awakening.png" class="status-icon"></div><div style="font-size:0.7em">x2.5</div></div></label>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">
+        <span>HP: <span id="hp-val" style="color:var(--hp-green)">100%</span></span>
+      </div>
+      <div class="hp-container">
+        <div id="hp-fill" class="hp-fill"></div>
+        <input type="range" id="hp-slider" min="1" max="100" value="100">
+      </div>
+    </div>
+    
+    <div class="footer-tip" id="random-tip">💡 Tip: ...</div>
+  </div>
+
+  <div id="overlay">
+    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <div id="anim-ball-container"></div>
+        <div id="anim-text" style="margin-top:20px; font-weight:800; font-size:1.5em; color:#4a5568; text-shadow:0 2px 5px rgba(255,255,255,0.5);"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+window.currentBaseRate = 190; 
+window.currentWeight = 6.0; 
+window.currentSpeed = 50; 
+window.currentTypes = ['electric'];
+window.allPokemonNames = [];
+window.currentBall = 'poke';
+window.currentProbability = 0;
+
+// --- AUDIO SYSTEM ---
+// ให้สร้างโฟลเดอร์ "sounds" แล้วเอาไฟล์ throw.mp3, hit.mp3, shake.mp3, catch.mp3, escape.mp3 ใส่ลงไป
+const sounds = {
+    throw: new Audio('sounds/throw.mp3'),
+    hit: new Audio('sounds/hit.mp3'),
+    shake: new Audio('sounds/shake.mp3'),
+    catch: new Audio('sounds/catch.mp3'),
+    escape: new Audio('sounds/escape.mp3')
+};
+
+// Preload (optional, but good practice)
+Object.values(sounds).forEach(s => s.load());
+
+function playSound(name) {
+    // Clone node to allow overlapping sounds (e.g. rapid throws)
+    // or just play. For sim, simpler is better.
+    const s = sounds[name];
+    if(s) {
+        s.currentTime = 0;
+        s.play().catch(e => console.log("Audio not loaded or blocked:", e));
+    }
+}
+
+// Random Tips
+const tips = [
+  '💡 Tip: ใช้ท่า "False Swipe" ให้เหลือ 1 HP เพื่อโอกาสสูงสุด',
+  '💡 Tip: สถานะ "หลับ (Sleep)" และ "แข็ง (Freeze)" เพิ่มโอกาสจับ 2.5 เท่า!',
+  '💡 Tip: "Quick Ball" ในเทิร์นแรกดีที่สุด (x5) หากพลาดให้ลอง "Dusk Ball" ตอนกลางคืน',
+  '💡 Tip: "Timer Ball" จะเก่งที่สุดหลังผ่านไป 10 เทิร์น (x4)',
+  '💡 Tip: การกดปุ่มรัวๆ ไม่ช่วยให้จับง่ายขึ้นนะ (แต่ช่วยทางใจ!)',
+  '💡 Tip: โปเกมอน "Water/Bug" แพ้ทาง "Net Ball" มาก (x3.5)',
+  '💡 Tip: หากเลเวลเราสูงกว่าศัตรูมากๆ "Level Ball" อาจดีกว่า Ultra Ball'
+];
+
+const typeColors = {
+  normal: '#A8A77A', fire: '#EE8130', water: '#6390F0', electric: '#F7D02C',
+  grass: '#7AC74C', ice: '#96D9D6', fighting: '#C22E28', poison: '#A33EA1',
+  ground: '#E2BF65', flying: '#A98FF3', psychic: '#F95587', bug: '#A6B91A',
+  rock: '#B6A136', ghost: '#735797', dragon: '#6F35FC', dark: '#705746',
+  steel: '#B7B7CE', fairy: '#D685AD'
+};
+
+// --- TOOLTIP LOGIC ---
+const tooltipEl = document.getElementById('custom-tooltip');
+const tooltipTargets = document.querySelectorAll('[data-tooltip]');
+
+tooltipTargets.forEach(el => {
+  el.addEventListener('mouseenter', (e) => {
+    tooltipEl.textContent = e.currentTarget.getAttribute('data-tooltip');
+    tooltipEl.classList.add('visible');
+  });
+  el.addEventListener('mousemove', (e) => {
+    tooltipEl.style.left = (e.clientX) + 'px'; // Center logic handled in CSS transform
+    tooltipEl.style.top = (e.clientY - 10) + 'px';
+  });
+  el.addEventListener('mouseleave', () => {
+    tooltipEl.classList.remove('visible');
+  });
+});
+
+// --- CORE CALCULATION ---
+window.calculate = function() {
+  // ... (Calculation logic same as before) ...
+  try {
+    const hp = parseInt(document.getElementById('hp-slider').value);
+    const ballRadio = document.querySelector('input[name="ball"]:checked');
+    const statusEl = document.querySelector('input[name="status"]:checked');
+    if (!ballRadio || !statusEl) return;
+
+    window.currentBall = ballRadio.value;
+    const statusMult = parseFloat(statusEl.value);
+
+    // HP Bar Color Logic
+    const hpFill = document.getElementById('hp-fill');
+    const hpVal = document.getElementById('hp-val');
+    hpFill.style.width = hp + '%';
+    hpVal.textContent = hp + '%';
+    if(hp < 20) { hpFill.style.background = 'var(--hp-red)'; hpVal.style.color = 'var(--hp-red)'; }
+    else if(hp < 50) { hpFill.style.background = 'var(--hp-yellow)'; hpVal.style.color = 'var(--hp-yellow)'; }
+    else { hpFill.style.background = 'var(--hp-green)'; hpVal.style.color = 'var(--hp-green)'; }
+
+    if (window.currentBall === 'master') {
+      window.currentProbability = 100;
+      document.getElementById('result-percent').innerHTML = '100<span>%</span>';
+      return;
+    }
+
+    let ballMult = getBallMultiplier(window.currentBall);
+    const maxHP = 100;
+    const curHP = hp;
+    let catchValue = 0;
+
+    if (window.currentBall === 'heavy') {
+      let heavyMod = 0;
+      if (window.currentWeight < 100) heavyMod = -20;
+      else if (window.currentWeight < 200) heavyMod = 0;
+      else if (window.currentWeight < 300) heavyMod = 20;
+      else heavyMod = 30;
+      let modifiedRate = window.currentBaseRate + heavyMod;
+      if (modifiedRate < 1) modifiedRate = 1;
+      catchValue = ((3 * maxHP - 2 * curHP) * modifiedRate * 1) / (3 * maxHP) * statusMult;
+    } else {
+      catchValue = ((3 * maxHP - 2 * curHP) * window.currentBaseRate * ballMult) / (3 * maxHP) * statusMult;
+    }
+
+    let prob = (catchValue / 255) * 100;
+    if(prob > 100) prob = 100;
+    if(prob < 0) prob = 0;
+
+    window.currentProbability = prob;
+    document.getElementById('result-percent').innerHTML = prob.toFixed(1) + '<span>%</span>';
+  } catch(e) { console.error(e); }
+}
+
+function getBallMultiplier(ballType) {
+  const turnInput = document.getElementById('turn-count');
+  const darkCheck = document.getElementById('is-dark');
+  const loveCheck = document.getElementById('is-love');
+  const myLvl = document.getElementById('my-lvl');
+  const enLvl = document.getElementById('enemy-lvl');
+
+  switch(ballType) {
+    case 'poke': return 1;
+    case 'great': return 1.5;
+    case 'ultra': return 2;
+    case 'quick': return (document.getElementById('is-turn-one')?.checked) ? 5 : 1;
+    case 'dusk': return (darkCheck?.checked) ? 3 : 1;
+    case 'timer':
+      let t = turnInput ? parseInt(turnInput.value) : 1;
+      return Math.min(4, 1 + (t * 0.3));
+    case 'net':
+      if (window.currentTypes.includes('water') || window.currentTypes.includes('bug')) return 3.5;
+      return 1;
+    case 'level':
+      let mL = myLvl ? parseInt(myLvl.value) : 50;
+      let eL = enLvl ? parseInt(enLvl.value) : 50;
+      if (mL <= eL) return 1;
+      if (mL > eL * 4) return 8;
+      if (mL > eL * 2) return 4;
+      return 2;
+    case 'love': return (loveCheck?.checked) ? 8 : 1;
+    case 'fast': return (window.currentSpeed >= 100) ? 4 : 1;
+    default: return 1;
+  }
+}
+
+window.updateContextPanel = function(ballType) {
+  const panel = document.getElementById('context-panel');
+  panel.innerHTML = ''; 
+  let html = '';
+
+  // ... (Context HTML Logic same as before) ...
+  if (ballType === 'quick') html = `<div class="input-group"><label>เทิร์นแรกใช่ไหม ?</label><label class="toggle-switch"><input type="checkbox" id="is-turn-one" onchange="calculate()"><span class="slider"></span></label></div>`;
+  else if (ballType === 'timer') html = `<div class="input-group"><label>เทิร์นที่:</label><input type="number" id="turn-count" class="tiny-input" value="1" min="1" max="50" oninput="calculate()"></div>`;
+  else if (ballType === 'dusk') html = `<div class="input-group"><label>กลางคืน/ในถ้ำ ใช่ไหม ?</label><label class="toggle-switch"><input type="checkbox" id="is-dark" onchange="calculate()"><span class="slider"></span></label></div>`;
+  else if (ballType === 'level') html = `<div class="input-group"><label>เลเวลของเรา:</label><input type="number" id="my-lvl" class="tiny-input" value="50" oninput="calculate()"></div><div class="input-group"><label>เลเวลเป้าหมาย:</label><input type="number" id="enemy-lvl" class="tiny-input" value="50" oninput="calculate()"></div>`;
+  else if (ballType === 'love') html = `<div class="input-group"><label>เพศตรงข้ามใช่ไหม ?</label><label class="toggle-switch"><input type="checkbox" id="is-love" onchange="calculate()"><span class="slider"></span></label></div>`;
+  else if (ballType === 'heavy') html = `<span class="context-msg">⚖️ น้ำหนัก: ${window.currentWeight}kg</span>`;
+  else if (ballType === 'fast') html = `<span class="context-msg">💨 ความเร็ว: ${window.currentSpeed}</span>`;
+  else if (ballType === 'net') {
+    const isTarget = window.currentTypes.includes('water') || window.currentTypes.includes('bug');
+    html = isTarget ? `<span class="context-msg" style="color:var(--hp-green); font-weight:bold">✅ เป้าหมาย (x3.5)</span>` : `<span class="context-msg">❌ ไม่ใช่เป้าหมาย (x1)</span>`;
+  }
+  else html = `<span class="context-msg">ไม่มีเงื่อนไขพิเศษ</span>`;
+  
+  panel.innerHTML = html;
+  calculate(); 
+}
+
+window.fetchPokemonData = async function(name) {
+  const spinner = document.getElementById('spinner');
+  const imgEl = document.getElementById('poke-img');
+  
+  if (!name) return;
+  name = name.toLowerCase();
+  
+  spinner.style.display = 'block'; 
+  imgEl.style.opacity = '0.5';
+
+  try {
+    const speciesRes = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${name}`);
+    if(!speciesRes.ok) throw new Error('Not found');
+    const speciesData = await speciesRes.json();
+    const pokeRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${speciesData.id}`);
+    const pokeData = await pokeRes.json();
+
+    window.currentBaseRate = speciesData.capture_rate;
+    window.currentWeight = pokeData.weight / 10; 
+    window.currentTypes = pokeData.types.map(t => t.type.name);
+    window.currentSpeed = pokeData.stats.find(s => s.stat.name === 'speed').base_stat;
+
+    imgEl.src = pokeData.sprites.other['official-artwork'].front_default || pokeData.sprites.front_default;
+    document.getElementById('cr-display').textContent = window.currentBaseRate;
+    document.getElementById('weight-display').textContent = window.currentWeight;
+    document.getElementById('poke-search').value = name.charAt(0).toUpperCase() + name.slice(1);
+
+    const badgesEl = document.getElementById('info-badges');
+    badgesEl.innerHTML = '';
+    window.currentTypes.forEach(t => {
+      const badge = document.createElement('span');
+      badge.className = 'badge'; badge.textContent = t;
+      badge.style.backgroundColor = typeColors[t] || '#777';
+      badgesEl.appendChild(badge);
+    });
+
+    // *** Fix: Force update panel immediately with new data ***
+    window.updateContextPanel(window.currentBall); 
+    
+    calculate();
+  } catch (e) { console.error(e); } 
+  finally { spinner.style.display = 'none'; imgEl.style.opacity = '1'; }
+}
+
+window.switchTab = function(tabName) {
+  document.querySelectorAll('.grid-options-balls').forEach(el => el.classList.remove('active'));
+  document.getElementById(`grid-${tabName}`).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// --- INIT ---
+document.addEventListener('DOMContentLoaded', async () => {
+  const searchInput = document.getElementById('poke-search');
+  const suggestionsList = document.getElementById('suggestions');
+  const toggleArrow = document.getElementById('toggle-arrow');
+  const btnThrow = document.getElementById('btn-throw');
+  
+  document.getElementById('random-tip').textContent = tips[Math.floor(Math.random() * tips.length)];
+
+  try {
+    const res = await fetch('https://pokeapi.co/api/v2/pokemon-species?limit=1025');
+    const data = await res.json();
+    window.allPokemonNames = data.results.map(p => p.name);
+    searchInput.disabled = false;
+    searchInput.placeholder = "พิมพ์ชื่อ...";
+    calculate(); 
+  } catch (e) { console.error(e); }
+
+  function updateSuggestions(val, forceShowAll) {
+    suggestionsList.innerHTML = '';
+    let matches = [];
+    if (forceShowAll) {
+      matches = window.allPokemonNames; 
+    } else if (val) {
+      matches = window.allPokemonNames.filter(n => n.startsWith(val.toLowerCase()));
+    } else {
+      suggestionsList.classList.remove('active');
+      return;
+    }
+    
+    if (matches.length > 0) {
+      suggestionsList.classList.add('active');
+      const fragment = document.createDocumentFragment();
+      const renderList = forceShowAll ? matches : matches.slice(0, 100);
+
+      renderList.forEach(match => {
+        const li = document.createElement('li');
+        li.textContent = match.charAt(0).toUpperCase() + match.slice(1);
+        li.onclick = () => { 
+          window.fetchPokemonData(match); 
+          suggestionsList.classList.remove('active'); 
+        };
+        fragment.appendChild(li);
+      });
+      suggestionsList.appendChild(fragment);
+    } else {
+      suggestionsList.classList.remove('active');
+    }
+  }
+
+  toggleArrow.addEventListener('click', (e) => { 
+    e.stopPropagation(); 
+    if(suggestionsList.classList.contains('active')) suggestionsList.classList.remove('active');
+    else updateSuggestions('', true); 
+  });
+
+  searchInput.addEventListener('click', (e) => { 
+    e.stopPropagation();
+    searchInput.select(); 
+    if(window.allPokemonNames.length) updateSuggestions(searchInput.value, searchInput.value === '');
+  });
+
+  searchInput.addEventListener('input', (e) => updateSuggestions(e.target.value, false));
+
+  document.addEventListener('click', (e) => { 
+    if(!e.target.closest('.search-wrapper')) suggestionsList.classList.remove('active'); 
+  });
+
+  document.querySelectorAll('input[name="ball"]').forEach(r => {
+    r.addEventListener('change', (e) => { window.updateContextPanel(e.target.value); window.calculate(); });
+  });
+  document.getElementById('hp-slider').addEventListener('input', window.calculate);
+  document.querySelectorAll('input[name="status"]').forEach(r => r.addEventListener('change', window.calculate));
+
+  // --- THROW SIMULATION (WITH SOUND) ---
+  btnThrow.addEventListener('click', () => {
+    const ballEl = document.querySelector('input[name="ball"]:checked');
+    if(!ballEl) return;
+    const ballImg = ballEl.getAttribute('data-img');
+    const overlay = document.getElementById('overlay');
+    const animBallContainer = document.getElementById('anim-ball-container');
+    const animText = document.getElementById('anim-text');
+    
+    btnThrow.disabled = true; 
+    overlay.classList.add('active');
+    
+    // Step 1: Throw
+    playSound('throw');
+    animBallContainer.innerHTML = `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${ballImg}.png" class="pokeball-anim-img" style="transform: scale(0.5); opacity: 0; transition: 0.5s all; margin-bottom: 200px;">`;
+    animText.textContent = "ปาบอลไปแล้ว!";
+
+    // Step 2: Hit Ground (0.6s)
+    setTimeout(() => {
+        playSound('hit');
+        animBallContainer.innerHTML = `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${ballImg}.png" class="pokeball-anim-img">`;
+        animText.textContent = "...";
+    }, 600);
+
+    // Logic: Determine Success
+    const success = Math.random() * 100 <= window.currentProbability;
+    const shakes = success ? 3 : Math.floor(Math.random() * 3); // 0, 1, or 2 shakes if fail
+
+    // Function to handle shakes
+    const doShake = (count, max) => {
+        if (count > max) {
+            // End Sequence
+            if (success) {
+                playSound('catch');
+                animText.innerHTML = '<span style="color:#4bc05b">✨ จับสำเร็จ! ✨</span>';
+                animBallContainer.innerHTML = `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${ballImg}.png" class="pokeball-anim-img" style="filter: brightness(1.2);">`;
+            } else {
+                playSound('escape');
+                animText.innerHTML = '<span style="color:#ff5040">💢 โปเกมอนหนีไปได้!</span>';
+                animBallContainer.innerHTML = `<div style="font-size:3em;">💥</div>`;
+            }
+            setTimeout(() => { overlay.classList.remove('active'); btnThrow.disabled = false; }, 2000);
+            return;
+        }
+
+        // Shake Action
+        setTimeout(() => {
+            playSound('shake');
+            const img = animBallContainer.querySelector('img');
+            if(img) {
+                img.classList.remove('shake-anim');
+                void img.offsetWidth; // trigger reflow
+                img.classList.add('shake-anim');
+            }
+            doShake(count + 1, max);
+        }, 1000);
+    };
+
+    // Start Shaking after Hit
+    setTimeout(() => {
+        doShake(1, shakes);
+    }, 1200);
+  });
+});
+</script>
+</body>
+</html>
