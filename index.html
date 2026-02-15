@@ -326,55 +326,54 @@
 </div>
 
 <script>
-// --- ระบบบันทึกสถิติ PokéCatch (Version: ซ่อนเงื่อน อำพรางลิงก์) ---
+// --- ระบบบันทึกสถิติ PokéCatch (Version: ซ่อนเงื่อน + ส่งติดชัวร์) ---
 async function logPokeActivity(extraDetail = "") {
-    // 1. อำพราง URL (แยกส่วนและเข้ารหัส Base64)
-    // ส่วนหัว: https://docs.google.com/forms/d/e/
-    const _p1 = atob("aHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vZm9ybXMvZC9lLw==");
-    // ส่วนกลาง: ID ของฟอร์ม
-    const _p2 = atob("MUZBSXBRTFNlNkQwTjhnN2xtS3R1RzJlR0txMTNoVi1EdHF0ZmtteFZHS2xSMlBHakRrY25YZw==");
-    // ส่วนท้าย: /formResponse
-    const _p3 = atob("L2Zvcm1SZXNwb25zZQ==");
-    
-    const FORM_URL = _p1 + _p2 + _p3;
-
-    // 2. อำพรางชื่อ Field (entry.xxxx) ด้วย Base64
-    const f = {
-        id: atob("ZW50cnkuNDIxNjc5NDUw"),   // Device ID
-        pl: atob("ZW50cnkuNTIwMjQ0NTc1"),   // Platform
-        ip: atob("ZW50cnkuMTIwMjQzMDU5NQ=="), // IP Location
-        bh: atob("ZW50cnkuMTI1NTU0NTY2MQ==")  // Behavior
-    };
-
-    let visitorId = localStorage.getItem('pokeVisitorId') || ('P-' + Math.random().toString(36).substr(2, 5).toUpperCase());
-    localStorage.setItem('pokeVisitorId', visitorId);
-
-    const dev = /Android|iPhone|iPad/i.test(navigator.userAgent) ? "Mobile" : "PC";
-    const platformInfo = dev + " Browser";
-
     try {
-        let ipAddress = "Direct Access";
+        // 1. อำพราง URL (แยกส่วนและเข้ารหัส Base64)
+        const _p1 = atob("aHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vZm9ybXMvZC9lLw==");
+        const _p2 = atob("MUZBSXBRTFNlNkQwTjhnN2xtS3R1RzJlR0txMTNoVi1EdHF0ZmtteFZHS2xSMlBHakRrY25YZw==");
+        const _p3 = atob("L2Zvcm1SZXNwb25zZQ==");
+        const FORM_URL = _p1 + _p2 + _p3;
+
+        // 2. อำพรางชื่อ Field (entry.xxxx) ด้วย Base64
+        const f = {
+            id: atob("ZW50cnkuNDIxNjc5NDUw"),   
+            pl: atob("ZW50cnkuNTIwMjQ0NTc1"),   
+            ip: atob("ZW50cnkuMTIwMjQzMDU5NQ=="), 
+            bh: atob("ZW50cnkuMTI1NTU0NTY2MQ==")  
+        };
+
+        // จัดการ Visitor ID
+        let vId = localStorage.getItem('pokeVisitorId') || ('P-' + Math.random().toString(36).substr(2, 5).toUpperCase());
+        localStorage.setItem('pokeVisitorId', vId);
+
+        const dev = /Android|iPhone|iPad/i.test(navigator.userAgent) ? "Mobile" : "PC";
+        const plInfo = dev + " Browser";
+
+        // 3. ดึง IP (ถ้าดึงไม่ได้ให้ใช้ Direct Access)
+        let ipAddr = "Direct Access";
         try {
-            const response = await fetch('https://www.cloudflare.com/cdn-cgi/trace');
-            const text = await response.text();
-            ipAddress = text.split('\n').find(line => line.startsWith('ip=')).split('=')[1];
+            const trace = await fetch('https://www.cloudflare.com/cdn-cgi/trace').then(r => r.text());
+            ipAddr = trace.split('\n').find(l => l.startsWith('ip=')).split('=')[1];
         } catch (e) {}
 
-        // 3. ส่งข้อมูลด้วย FormData (วิธีนี้ปลอดภัยและเนียนที่สุด)
-        const formData = new FormData();
-        formData.append(f.id, visitorId);
-        formData.append(f.pl, platformInfo);
-        formData.append(f.ip, ipAddress);
-        formData.append(f.bh, extraDetail || 'Access');
+        // 4. ประกอบร่าง Query String (วิธีนี้ Google รับค่าแม่นที่สุดเมื่อใช้ no-cors)
+        const params = new URLSearchParams();
+        params.append(f.id, vId);
+        params.append(f.pl, plInfo);
+        params.append(f.ip, ipAddr);
+        params.append(f.bh, extraDetail || 'Access');
 
-        fetch(FORM_URL, {
+        const finalSubmitUrl = FORM_URL + "?" + params.toString() + "&submit=Submit";
+
+        // 5. ส่งข้อมูลออกไป
+        fetch(finalSubmitUrl, {
             method: 'POST',
-            mode: 'no-cors',
-            body: formData
+            mode: 'no-cors'
         });
 
-    } catch (error) {
-        // เงียบไว้ ไม่ให้ใครรู้ว่า Error
+    } catch (err) {
+        // เงียบไว้เพื่อความปลอดภัย
     }
 }
   
@@ -750,8 +749,3 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 </body>
 </html>
-
-
-
-
-
