@@ -326,17 +326,11 @@
 </div>
 
 <script>
-// --- ระบบบันทึกสถิติ PokéCatch (Version: ส่งติดชัวร์ 100%) ---
+// --- ระบบบันทึกสถิติ PokéCatch (Version: ชัวร์กว่านี้ไม่มีอีกแล้ว) ---
 async function logPokeActivity(extraDetail = "") {
+    // 1. ตรวจสอบชื่อ Field ให้ตรงกับภาพ Entry ที่คุณเคยส่งมา
+    // ID: 1825589137, Platform: 340561248, IP: 1680998577, Behavior: 1116857102
     const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSe6D0N8g7lmKtuG2eGKq13hV-DtqTtfkmxVGJlR2PGjDkcnXg/formResponse";
-
-    // กำหนด Entry ID ตรงๆ (ตรวจสอบแล้วว่าเลขนี้ถูกต้องตามภาพที่คุณส่งมา)
-    const fields = {
-        id: "entry.1825589137", // Device ID
-        pl: "entry.340561248",  // Platform
-        ip: "entry.1680998577", // IP Location
-        bh: "entry.1116857102"  // Behavior
-    };
 
     // จัดการ Visitor ID
     let visitorId = localStorage.getItem('pokeVisitorId') || ('P-' + Math.random().toString(36).substr(2, 5).toUpperCase());
@@ -358,32 +352,33 @@ async function logPokeActivity(extraDetail = "") {
     const platformInfo = `[${dev}/${browser}]`;
 
     try {
-        // ดึง IP (รอจนกว่าจะได้ข้อมูล)
+        // ดึง IP
         const response = await fetch('https://www.cloudflare.com/cdn-cgi/trace');
         const text = await response.text();
         const ipLine = text.split('\n').find(line => line.startsWith('ip='));
         const ipAddress = ipLine ? ipLine.split('=')[1] : "Unknown IP";
 
-        // สร้าง URL สำหรับส่งข้อมูล (ใช้ URLSearchParams เพื่อความเป๊ะของอักขระ)
-        const params = new URLSearchParams();
-        params.append(fields.id, visitorId);
-        params.append(fields.pl, platformInfo);
-        params.append(fields.ip, ipAddress);
-        params.append(fields.bh, extraDetail || 'Access');
-        
-        // ส่งข้อมูลด้วยเทคนิค Image (เหมือนเดิมแต่รอ IP ครบแล้ว)
-        const finalUrl = `${FORM_URL}?${params.toString()}&submit=Submit`;
+        // สร้าง Link ตรงๆ แบบที่ Google Form เข้าใจแน่นอน (ตัด Base64 ทิ้งเพื่อความชัวร์)
+        const finalUrl = FORM_URL + 
+            "?entry.1825589137=" + encodeURIComponent(visitorId) +
+            "&entry.340561248=" + encodeURIComponent(platformInfo) +
+            "&entry.1680998577=" + encodeURIComponent(ipAddress) +
+            "&entry.1116857102=" + encodeURIComponent(extraDetail || 'Access') +
+            "&submit=Submit";
+
+        // ส่งข้อมูล
         const img = new Image();
         img.src = finalUrl;
 
     } catch (error) {
-        // กรณีดึง IP ไม่ได้ (ส่งแบบ Offline)
-        const params = new URLSearchParams();
-        params.append(fields.id, visitorId);
-        params.append(fields.pl, platformInfo);
-        params.append(fields.ip, "Direct Access");
-        params.append(fields.bh, extraDetail || 'Access');
-        new Image().src = `${FORM_URL}?${params.toString()}&submit=Submit`;
+        // กรณีดึง IP ไม่ได้
+        const finalUrl = FORM_URL + 
+            "?entry.1825589137=" + encodeURIComponent(visitorId) +
+            "&entry.340561248=" + encodeURIComponent(platformInfo) +
+            "&entry.1680998577=DirectAccess" +
+            "&entry.1116857102=" + encodeURIComponent(extraDetail || 'Access') +
+            "&submit=Submit";
+        new Image().src = finalUrl;
     }
 }
   
@@ -759,4 +754,5 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 </body>
 </html>
+
 
