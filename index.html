@@ -326,58 +326,45 @@
 </div>
 
 <script>
-// --- ระบบบันทึกสถิติ PokéCatch (Version: ชัวร์กว่านี้ไม่มีอีกแล้ว) ---
+// --- ระบบบันทึกสถิติ PokéCatch (ID แก้ไขถูกต้องแล้ว) ---
 async function logPokeActivity(extraDetail = "") {
-    // 1. ตรวจสอบชื่อ Field ให้ตรงกับภาพ Entry ที่คุณเคยส่งมา
-    // ID: 1825589137, Platform: 340561248, IP: 1680998577, Behavior: 1116857102
     const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSe6D0N8g7lmKtuG2eGKq13hV-DtqTtfkmxVGJlR2PGjDkcnXg/formResponse";
 
-    // จัดการ Visitor ID
+    // ใช้เลข ID ที่ถูกต้องตามที่พี่แจ้งมา
+    const f = {
+        id: "entry.421679450",   // Device ID
+        pl: "entry.520244575",   // Platform
+        ip: "entry.1202430595",  // IP Location
+        bh: "entry.1255545661"   // Behavior
+    };
+
     let visitorId = localStorage.getItem('pokeVisitorId') || ('P-' + Math.random().toString(36).substr(2, 5).toUpperCase());
     localStorage.setItem('pokeVisitorId', visitorId);
 
-    // ดึงข้อมูล Device/Browser
     const ua = navigator.userAgent;
     const dev = /Android|iPhone|iPad/i.test(ua) ? "Mobile" : "PC";
     let browser = "Unknown";
     if (ua.includes("Line/")) browser = "LINE";
     else if (ua.includes("FBAN") || ua.includes("FBAV")) browser = "Facebook";
     else if (navigator.brave && typeof navigator.brave.isBrave === "function") browser = "Brave";
-    else if (ua.includes("DuckDuckGo/")) browser = "DuckDuckGo";
     else if (ua.includes("Edg/")) browser = "Edge";
-    else if (ua.includes("OPR/") || ua.includes("Opera")) browser = "Opera";
-    else if (ua.includes("Firefox/") || ua.includes("FxiOS/")) browser = "Firefox";
-    else if (ua.includes("Chrome") || ua.includes("CriOS")) browser = "Chrome";
-    else if (ua.includes("Safari") && !ua.includes("Chrome")) browser = "Safari";
+    else if (ua.includes("Chrome")) browser = "Chrome";
+    else if (ua.includes("Safari")) browser = "Safari";
+    
     const platformInfo = `[${dev}/${browser}]`;
 
     try {
-        // ดึง IP
         const response = await fetch('https://www.cloudflare.com/cdn-cgi/trace');
         const text = await response.text();
         const ipLine = text.split('\n').find(line => line.startsWith('ip='));
         const ipAddress = ipLine ? ipLine.split('=')[1] : "Unknown IP";
 
-        // สร้าง Link ตรงๆ แบบที่ Google Form เข้าใจแน่นอน (ตัด Base64 ทิ้งเพื่อความชัวร์)
-        const finalUrl = FORM_URL + 
-            "?entry.1825589137=" + encodeURIComponent(visitorId) +
-            "&entry.340561248=" + encodeURIComponent(platformInfo) +
-            "&entry.1680998577=" + encodeURIComponent(ipAddress) +
-            "&entry.1116857102=" + encodeURIComponent(extraDetail || 'Access') +
-            "&submit=Submit";
-
-        // ส่งข้อมูล
+        const finalUrl = `${FORM_URL}?${f.id}=${encodeURIComponent(visitorId)}&${f.pl}=${encodeURIComponent(platformInfo)}&${f.ip}=${encodeURIComponent(ipAddress)}&${f.bh}=${encodeURIComponent(extraDetail || 'Access')}&submit=Submit`;
+        
         const img = new Image();
         img.src = finalUrl;
-
     } catch (error) {
-        // กรณีดึง IP ไม่ได้
-        const finalUrl = FORM_URL + 
-            "?entry.1825589137=" + encodeURIComponent(visitorId) +
-            "&entry.340561248=" + encodeURIComponent(platformInfo) +
-            "&entry.1680998577=DirectAccess" +
-            "&entry.1116857102=" + encodeURIComponent(extraDetail || 'Access') +
-            "&submit=Submit";
+        const finalUrl = `${FORM_URL}?${f.id}=${encodeURIComponent(visitorId)}&${f.pl}=${encodeURIComponent(platformInfo)}&${f.ip}=Direct&${f.bh}=${encodeURIComponent(extraDetail || 'Access')}&submit=Submit`;
         new Image().src = finalUrl;
     }
 }
@@ -754,5 +741,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 </body>
 </html>
+
 
 
