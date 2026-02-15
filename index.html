@@ -380,21 +380,20 @@ async function logPokeActivity(extraDetail = "") {
     }
 }
 
-function initImposterWarning() {
-    let warningCount = 0;
-    const maxWarnings = 3;
+function IHereKeeCopy() {
+    let ForFirstWarn = 0;
+    const DonToWarn = 3;
     const _0xf1 = atob('aHR0cHM6Ly9hcHB0Y3IuZ2l0aHViLmlvL3Bva2VjYXRjaGNhbGMvaW5kZXguaHRtbA==');
-    
+
     function showWarning() {
-        warningCount++;
-        
-        if (warningCount > maxWarnings) {
+        ForFirstWarn++;
+        if (ForFirstWarn > DonToWarn) {
             window.location.href = _0xf1;
             return;
         }
-        
+
         const modal = document.createElement('div');
-        modal.id = 'imposterWarning';
+        modal.id = 'ToocatchImWarn';
         modal.style.cssText = `
             position: fixed;
             top: 50%;
@@ -411,14 +410,22 @@ function initImposterWarning() {
             min-width: 300px;
             animation: slideIn 0.3s ease-out;
         `;
-        
+
         modal.innerHTML = `
-            <div style="font-size: 50px; margin-bottom: 15px;">⚠️</div>
-            <h2 style="margin: 0 0 15px 0; font-size: 24px;">แจ้งเตือน!</h2>
-            <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.5;">
-                กรุณากลับไปใช้เว็บหลัก<br>
-            </p>
-            <button id="closeWarning" style="
+            <div style="
+				font-size: 50px;
+				margin-bottom: 15px;
+			">\u26a0\ufe0f</div>
+            <h2 style="
+				margin: 0 0 15px 0;
+				font-size: 24px;
+			">\u0e41\u0e08\u0e49\u0e07\u0e40\u0e15\u0e37\u0e2d\u0e19!</h2>
+            <p style="
+				margin: 0 0 20px 0;
+				font-size: 16px;
+				line-height: 1.5;
+			">\u0e01\u0e23\u0e38\u0e13\u0e32\u0e01\u0e25\u0e31\u0e1a\u0e44\u0e1b\u0e43\u0e0a\u0e49\u0e40\u0e27\u0e47\u0e1a\u0e2b\u0e25\u0e31\u0e01<br></p>
+            <button id="closeWarn" style="
                 background: white;
                 color: #667eea;
                 border: none;
@@ -428,9 +435,9 @@ function initImposterWarning() {
                 font-weight: bold;
                 cursor: pointer;
                 transition: all 0.3s;
-            ">ปิด</button>
+            ">\u0e1b\u0e34\u0e14</button>
         `;
-        
+
         const style = document.createElement('style');
         style.textContent = `
             @keyframes slideIn {
@@ -443,13 +450,13 @@ function initImposterWarning() {
                     transform: translate(-50%, -50%);
                 }
             }
-            #closeWarning:hover {
+            #closeWarn:hover {
                 transform: scale(1.05);
                 box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             }
         `;
         document.head.appendChild(style);
-        
+
         const backdrop = document.createElement('div');
         backdrop.id = 'warningBackdrop';
         backdrop.style.cssText = `
@@ -461,23 +468,23 @@ function initImposterWarning() {
             background: rgba(0,0,0,0.5);
             z-index: 999998;
         `;
-        
+
         document.body.appendChild(backdrop);
         document.body.appendChild(modal);
-        
-        document.getElementById('closeWarning').onclick = function() {
+
+        document.getElementById('closeWarn').onclick = function() {
             modal.remove();
             backdrop.remove();
         };
-        
+
         setTimeout(() => {
-            if (document.getElementById('imposterWarning')) {
+            if (document.getElementById('ToocatchImWarn')) {
                 modal.remove();
                 backdrop.remove();
             }
         }, 10000);
     }
-    
+
     setTimeout(() => {
         showWarning();
         setInterval(showWarning, 10000);
@@ -835,3 +842,4 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 </body>
 </html>
+
