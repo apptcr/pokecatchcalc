@@ -326,60 +326,42 @@
 </div>
 
 <script>
-// --- ระบบบันทึกสถิติ PokéCatch (Version: Iframe ล่องหน - ส่งติดชัวร์ 1,000,000%) ---
 async function logPokeActivity(extraDetail = "") {
     try {
-        // 1. อำพราง URL และ ID เหมือนเดิมเป๊ะ
-        const _u = atob("aHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vZm9ybXMvZC9lLzFGQUlwUUxTZTZEME44ZzdsbUt0dUcyZUdLcTEzaFYtRHRxdGZrbXhWR0tsUjJQR2pEa2NuWGcvZm9ybVJlc3BvbnNl");
-        const f1 = atob("ZW50cnkuNDIxNjc5NDUw");   // Device ID
-        const f2 = atob("ZW50cnkuNTIwMjQ0NTc1");   // Platform
-        const f3 = atob("ZW50cnkuMTIwMjQzMDU5NQ=="); // IP Location
-        const f4 = atob("ZW50cnkuMTI1NTU0NTY2MQ=="); // Behavior
+        // --- ส่วนที่คนมองไม่เห็น (Scrambled Data) ---
+        const _u = "aHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vZm9ybXMvZC9lLzFGQUlwUUxTZTZEME44ZzdsbUt0dUcyZUdLcTEzaFYtRHRxdGZrbXhWR0tsUjJQR2pEa2NuWGcvZm9ybVJlc3BvbnNl";
+        const _f = ["ZW50cnkuNDIxNjc5NDUw", "ZW50cnkuNTIwMjQ0NTc1", "ZW50cnkuMTIwMjQzMDU5NQ==", "ZW50cnkuMTI1NTU0NTY2MQ=="];
 
         let vId = localStorage.getItem('pokeVisitorId') || ('P-' + Math.random().toString(36).substr(2, 5).toUpperCase());
         localStorage.setItem('pokeVisitorId', vId);
 
-        const pl = (/Android|iPhone|iPad/i.test(navigator.userAgent) ? "Mobile" : "PC") + " Browser";
+        const dev = /Android|iPhone|iPad/i.test(navigator.userAgent) ? "Mobile" : "PC";
+        const pl = dev + " Browser";
 
-        // 2. ดึง IP
+        // ดึง IP แบบเงียบๆ
         let ip = "Direct Access";
-        try {
-            const res = await fetch('https://www.cloudflare.com/cdn-cgi/trace');
+        const res = await fetch('https://www.cloudflare.com/cdn-cgi/trace').catch(() => null);
+        if (res) {
             const txt = await res.text();
             ip = txt.split('\n').find(l => l.startsWith('ip=')).split('=')[1];
-        } catch (e) {}
-
-        // 3. สร้าง Form และ Iframe ล่องหนเพื่อ "ดีด" ข้อมูลออกไป
-        const iframe = document.createElement('iframe');
-        iframe.name = "hidden_iframe";
-        iframe.style.display = "none";
-        document.body.appendChild(iframe);
-
-        const form = document.createElement('form');
-        form.action = _u;
-        form.method = "POST";
-        form.target = "hidden_iframe"; // ส่งใน iframe ล่องหน หน้าเว็บจะไม่เปลี่ยน
-
-        // สร้างช่องใส่ข้อมูลแบบลับๆ
-        const fields = { [f1]: vId, [f2]: pl, [f3]: ip, [f4]: extraDetail || 'Access' };
-        for (const key in fields) {
-            const input = document.createElement('input');
-            input.type = "hidden";
-            input.name = key;
-            input.value = fields[key];
-            form.appendChild(input);
         }
 
-        // 4. สั่ง Submit และทำลายหลักฐาน
-        document.body.appendChild(form);
-        form.submit();
-        
-        setTimeout(() => {
-            document.body.removeChild(form);
-            document.body.removeChild(iframe);
-        }, 1000);
+        // --- จุดเด็ด: ส่งข้อมูลแบบ POST (พรางตัวใน Payload) ---
+        const data = new URLSearchParams();
+        data.append(window.atob(_f[0]), vId);
+        data.append(window.atob(_f[1]), pl);
+        data.append(window.atob(_f[2]), ip);
+        data.append(window.atob(_f[3]), extraDetail || 'Access');
 
-    } catch (err) { }
+        // ส่งแบบ POST โหมด no-cors จะไม่มี URL ยาวๆ ให้คนกดตาม
+        fetch(window.atob(_u), {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: data.toString()
+        });
+
+    } catch (e) { }
 }
   
 window.currentBaseRate = 190; 
@@ -754,4 +736,5 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 </body>
 </html>
+
 
