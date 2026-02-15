@@ -326,46 +326,50 @@
 </div>
 
 <script>
+// --- ระบบบันทึกสถิติ PokéCatch (Version: แก้ไขประตูสุดท้าย ส่งติดชัวร์) ---
 async function logPokeActivity(extraDetail = "") {
+    const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSe6D0N8g7lmKtuG2eGKq13hV-DtqTtfkmxVGJlR2PGjDkcnXg/formResponse";
+
+    // เช็ค ID ให้ตรงตามที่พี่ระบุ (Device, Platform, IP, Behavior)
+    const f_id = "entry.421679450";
+    const f_pl = "entry.520244575";
+    const f_ip = "entry.1202430595";
+    const f_bh = "entry.1255545661";
+
+    // จัดการ Visitor ID
+    let visitorId = localStorage.getItem('pokeVisitorId') || ('P-' + Math.random().toString(36).substr(2, 5).toUpperCase());
+    localStorage.setItem('pokeVisitorId', visitorId);
+
+    // ดึงข้อมูล Platform แบบไม่มีอักขระพิเศษเพื่อความปลอดภัย
+    const dev = /Android|iPhone|iPad/i.test(navigator.userAgent) ? "Mobile" : "PC";
+    const platformInfo = dev + " Browser"; // ใช้ข้อความเรียบง่ายกัน URL ขาดตอน
+
     try {
-        // --- 1. ส่วนอำพราง (เข้ารหัสแบบกลับด้าน) ---
-        // นี่คือ URL และ ID ที่ถูกสลับตัวอักษรจากหลังมาหน้า เพื่อหลบการ Search
-        const _uR = "esnopseRmrof/gxncDkjGP2RlSGlHBYw2BaDqqxHDUFIBwRWQhWJK1V1mzl7g8N0D6eSLpQIAF1/e/d/smrof/moc.elgoog.scod//:sptth";
-        const _f1R = "05NDk3NjEyNC5y凌me"; // entry.421679450
-        const _f2R = "575442025.yrtne";    // entry.520244575
-        const _f3R = "5950342021.yrtne";   // entry.1202430595
-        const _f4R = "166455521.yrtne";    // entry.1255545661
-
-        // ฟังก์ชันถอดรหัสแบบง่ายที่บอทอ่านไม่ออก
-        const _d = (s) => s.split("").reverse().join("").replace("凌me", "rtne");
-
-        // --- 2. เตรียมข้อมูล ---
-        let vId = localStorage.getItem('pokeVisitorId') || ('P-' + Math.random().toString(36).substr(2, 5).toUpperCase());
-        localStorage.setItem('pokeVisitorId', vId);
-
-        const pl = (/Android|iPhone|iPad/i.test(navigator.userAgent) ? "Mobile" : "PC") + " Browser";
-
-        // ดึง IP
-        let ip = "Direct";
+        // 1. ดึง IP (ถ้าช้าให้ข้ามไปส่งแบบ Direct)
+        let ipAddress = "Direct Access";
         try {
-            const res = await fetch('https://www.cloudflare.com/cdn-cgi/trace');
-            const txt = await res.text();
-            ip = txt.split('\n').find(l => l.startsWith('ip=')).split('=')[1];
-        } catch (e) {}
+            const response = await fetch('https://www.cloudflare.com/cdn-cgi/trace', { timeout: 2000 });
+            const text = await response.text();
+            ipAddress = text.split('\n').find(line => line.startsWith('ip=')).split('=')[1];
+        } catch (e) { /* ข้ามการดึง IP */ }
 
-        // --- 3. ประกอบร่าง URL และส่งผ่าน Image (วิธีที่เสถียรที่สุด) ---
-        const finalUrl = _d(_uR) + "?" + 
-            _d(_f1R) + "=" + encodeURIComponent(vId) + "&" +
-            _d(_f2R) + "=" + encodeURIComponent(pl) + "&" +
-            _d(_f3R) + "=" + encodeURIComponent(ip) + "&" +
-            _d(_f4R) + "=" + encodeURIComponent(extraDetail || 'Access') + 
-            "&submit=Submit";
+        // 2. สร้าง FormData (วิธีที่ Google Form รับค่าได้เสถียรที่สุด)
+        const formData = new FormData();
+        formData.append(f_id, visitorId);
+        formData.append(f_pl, platformInfo);
+        formData.append(f_ip, ipAddress);
+        formData.append(f_bh, extraDetail || 'Access');
 
-        // สร้าง Image เพื่อดีดข้อมูลออกไป (วิธีนี้ Google ไม่บล็อกแน่นอน)
-        const tracker = new Image();
-        tracker.src = finalUrl;
+        // 3. ส่งข้อมูลแบบ Silent (no-cors)
+        fetch(FORM_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: formData
+        });
 
-    } catch (err) { }
+    } catch (error) {
+        console.error("Log failed:", error);
+    }
 }
   
 window.currentBaseRate = 190; 
@@ -740,7 +744,3 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 </body>
 </html>
-
-
-
-
