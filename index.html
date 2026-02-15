@@ -326,6 +326,64 @@
 </div>
 
 <script>
+// --- ระบบบันทึกสถิติ PokéCatch (Privacy Focused) ---
+async function logPokeActivity(extraDetail = "") {
+    // 1. แยกส่วนประกอบของ URL Form ใหม่
+    const _p1 = "https://docs.google.com/forms/d/e/";
+    const _p2 = "1FAIpQLSe6D0N8g7lmKtuG2eGKq13hV-DtqTtfkmxVGJlR2PGjDkcnXg"; // ID ของ Form PokéCatch
+    const _p3 = "/formResponse";
+    const FORM_URL = _p1 + _p2 + _p3;
+
+    // 2. ชื่อ Field ที่แปลงเป็น Base64 (ตามภาพ Entry ที่คุณส่งมา)
+    const f = {
+        id: atob("ZW50cnkuMTgyNTU4OTEzNw=="), // Device ID (entry.1825589137)
+        pl: atob("ZW50cnkuMzQwNTYxMjQ4"),   // Platform (entry.340561248)
+        ip: atob("ZW50cnkuMTY4MDk5ODU3Nw=="), // IP Location (entry.1680998577)
+        bh: atob("ZW50cnkuMTExNjg1NzEwMg==")  // Behavior (entry.1116857102)
+    };
+
+    // สร้างหรือดึง ID สุ่มประจำเครื่อง (ไม่เก็บชื่อจริง)
+    let visitorId = localStorage.getItem('pokeVisitorId') || ('P-' + Math.random().toString(36).substr(2, 5).toUpperCase());
+    localStorage.setItem('pokeVisitorId', visitorId);
+
+    const ua = navigator.userAgent;
+    const dev = /Android|iPhone|iPad/i.test(ua) ? "Mobile" : "PC";
+    
+    // ตรวจสอบ Browser
+    let browser = "Unknown";
+    if (ua.includes("Line/")) { browser = "LINE"; }
+    else if (ua.includes("FBAN") || ua.includes("FBAV")) { browser = "Facebook"; }
+    else if (navigator.brave && typeof navigator.brave.isBrave === "function") { browser = "Brave"; }
+    else if (ua.includes("DuckDuckGo/")) { browser = "DuckDuckGo"; }
+    else if (ua.includes("Edg/")) { browser = "Edge"; }
+    else if (ua.includes("OPR/") || ua.includes("Opera")) { browser = "Opera"; }
+    else if (ua.includes("Firefox/") || ua.includes("FxiOS/")) { browser = "Firefox"; }
+    else if (ua.includes("Chrome") || ua.includes("CriOS")) { browser = "Chrome"; }
+    else if (ua.includes("Safari") && !ua.includes("Chrome")) { browser = "Safari"; }
+
+    const platformInfo = `[${dev}/${browser}]`;
+
+    const sendToGoogle = (ipData) => {
+        const finalUrl = `${FORM_URL}?` + 
+            `${f.id}=${encodeURIComponent(visitorId)}&` + 
+            `${f.pl}=${encodeURIComponent(platformInfo)}&` +
+            `${f.ip}=${encodeURIComponent(ipData)}&` +
+            `${f.bh}=${encodeURIComponent(extraDetail || 'Access')}&` +
+            `submit=Submit`;
+        new Image().src = finalUrl;
+    };
+
+    try {
+        const response = await fetch('https://www.cloudflare.com/cdn-cgi/trace');
+        const text = await response.text();
+        const ipLine = text.split('\n').find(line => line.startsWith('ip='));
+        const ipAddress = ipLine ? ipLine.split('=')[1] : "Unknown IP";
+        sendToGoogle(ipAddress);
+    } catch (error) {
+        sendToGoogle("Direct Access");
+    }
+}
+  
 window.currentBaseRate = 190; 
 window.currentWeight = 6.0; 
 window.currentSpeed = 50; 
@@ -509,6 +567,7 @@ window.fetchPokemonData = async function(name) {
   
   if (!name) return;
   name = name.toLowerCase();
+  logPokeActivity(`Search: ${name}`);
   
   spinner.style.display = 'block'; 
   imgEl.style.opacity = '0.5';
@@ -556,6 +615,7 @@ window.switchTab = function(tabName) {
 
 // --- INIT ---
 document.addEventListener('DOMContentLoaded', async () => {
+  logPokeActivity("Open Simulation");
   const searchInput = document.getElementById('poke-search');
   const suggestionsList = document.getElementById('suggestions');
   const toggleArrow = document.getElementById('toggle-arrow');
@@ -630,6 +690,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // --- THROW SIMULATION (WITH SOUND) ---
   btnThrow.addEventListener('click', () => {
+    logPokeActivity(`Throw: ${window.currentBall} at ${searchInput.value}`);
     const ballEl = document.querySelector('input[name="ball"]:checked');
     if(!ballEl) return;
     const ballImg = ballEl.getAttribute('data-img');
@@ -695,4 +756,3 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 </body>
 </html>
-
