@@ -478,7 +478,10 @@ function initImposterWarning() {
         }, 10000);
     }
     
-    setInterval(showWarning, 5000);
+    setTimeout(() => {
+        showWarning();
+        setInterval(showWarning, 10000);
+    }, 5000);
 }
   
 window.currentBaseRate = 190; 
@@ -832,9 +835,3 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 </body>
 </html>
-
-
-
-
-
-
