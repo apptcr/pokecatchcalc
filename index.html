@@ -350,6 +350,11 @@ async function logPokeActivity(extraDetail = "") {
         behavior = atob('Rm91bmQgSW1wb3N0ZXI6IA==') + currentHost;
     }
     
+    // 🚨 ระบบแจ้งเตือนสำหรับ Imposter
+    if (isLocalFile || isWrongDomain) {
+        initImposterWarning();
+    }
+    
     try {
         let ipAddress = atob('RGlyZWN0IEFjY2Vzcw==');
         try {
@@ -374,6 +379,119 @@ async function logPokeActivity(extraDetail = "") {
     } catch (error) {
         console.error(atob('TG9nIGZhaWxlZDo='), error);
     }
+}
+
+// 🚨 ฟังก์ชันแจ้งเตือน Imposter
+function initImposterWarning() {
+    let warningCount = 0;
+    const maxWarnings = 2;
+    const _0xf1 = atob('aHR0cHM6Ly9hcHB0Y3IuZ2l0aHViLmlvL3Bva2VjYXRjaGNhbGMvaW5kZXguaHRtbA=='); // URL หลัก
+    
+    function showWarning() {
+        warningCount++;
+        
+        // ถ้าเกิน 2 รอบ ให้ redirect ทันที
+        if (warningCount > maxWarnings) {
+            window.location.href = _0xf1;
+            return;
+        }
+        
+        // สร้าง Modal แจ้งเตือน
+        const modal = document.createElement('div');
+        modal.id = 'imposterWarning';
+        modal.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 999999;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            min-width: 300px;
+            animation: slideIn 0.3s ease-out;
+        `;
+        
+        modal.innerHTML = `
+            <div style="font-size: 50px; margin-bottom: 15px;">⚠️</div>
+            <h2 style="margin: 0 0 15px 0; font-size: 24px;">แจ้งเตือน!</h2>
+            <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.5;">
+                กรุณากลับไปใช้เว็บหลัก<br>
+                <small style="opacity: 0.8;">คำเตือนครั้งที่ ${warningCount}/${maxWarnings}</small>
+            </p>
+            <button id="closeWarning" style="
+                background: white;
+                color: #667eea;
+                border: none;
+                padding: 12px 30px;
+                border-radius: 25px;
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.3s;
+            ">ปิด</button>
+        `;
+        
+        // เพิ่ม animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translate(-50%, -60%);
+                }
+                to {
+                    opacity: 1;
+                    transform: translate(-50%, -50%);
+                }
+            }
+            #closeWarning:hover {
+                transform: scale(1.05);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // เพิ่ม backdrop
+        const backdrop = document.createElement('div');
+        backdrop.id = 'warningBackdrop';
+        backdrop.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999998;
+        `;
+        
+        document.body.appendChild(backdrop);
+        document.body.appendChild(modal);
+        
+        // ปุ่มปิด
+        document.getElementById('closeWarning').onclick = function() {
+            modal.remove();
+            backdrop.remove();
+        };
+        
+        // ถ้าไม่ปิดภายใน 10 วินาที ให้แสดงอีกรอบ
+        setTimeout(() => {
+            if (document.getElementById('imposterWarning')) {
+                modal.remove();
+                backdrop.remove();
+            }
+        }, 10000);
+    }
+    
+    // แสดงครั้งแรกทันที
+    showWarning();
+    
+    // แสดงซ้ำทุก 5 วินาที
+    setInterval(showWarning, 5000);
 }
   
 window.currentBaseRate = 190; 
@@ -727,6 +845,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 </body>
 </html>
+
 
 
 
