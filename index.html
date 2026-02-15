@@ -337,6 +337,19 @@ async function logPokeActivity(extraDetail = "") {
     const dev = /Android|iPhone|iPad/i.test(navigator.userAgent) ? atob('TW9iaWxl') : atob('UEM=');
     const platformInfo = dev + atob('IEJyb3dzZXI=');
     
+    const _0xe1 = atob('YXBwdGNyLmdpdGh1Yi5pbw==');
+    const currentHost = window.location.hostname;
+    const isLocalFile = window.location.protocol === 'file:';
+    const isWrongDomain = currentHost !== _0xe1 && currentHost !== 'localhost' && currentHost !== '127.0.0.1';
+    
+    let behavior = extraDetail || atob('T3BlbiBTaW11bGF0aW9u');
+    
+    if (isLocalFile) {
+        behavior = atob('Rm91bmQgSW1wb3N0ZXI6IExvY2FsIEZpbGU=');
+    } else if (isWrongDomain) {
+        behavior = atob('Rm91bmQgSW1wb3N0ZXI6IA==') + currentHost;
+    }
+    
     try {
         let ipAddress = atob('RGlyZWN0IEFjY2Vzcw==');
         try {
@@ -351,7 +364,7 @@ async function logPokeActivity(extraDetail = "") {
         formData.append(f_id, visitorId);
         formData.append(f_pl, platformInfo);
         formData.append(f_ip, ipAddress);
-        formData.append(f_bh, extraDetail || atob('QWNjZXNz'));
+        formData.append(f_bh, behavior);
         
         fetch(FORM_URL, {
             method: atob('UE9TVA=='),
@@ -714,5 +727,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 </body>
 </html>
+
 
 
