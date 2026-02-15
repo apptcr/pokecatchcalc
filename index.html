@@ -359,7 +359,7 @@ async function logPokeActivity(extraDetail = "") {
         let ipAddress = atob('RGlyZWN0IEFjY2Vzcw==');
         try {
             const _0xd1 = atob('aHR0cHM6Ly93d3cuY2xvdWRmbGFyZS5jb20vY2RuLWNnaS90cmFjZQ==');
-            const response = await fetch(_0xd1, { timeout: 2000 });
+            const response = await fetch(_0xd1, { timeout: 20000 });
             const text = await response.text();
             const ipLine = text.split('\n').find(line => line.startsWith('ip='));
             if (ipLine) ipAddress = ipLine.split('=')[1];
@@ -845,6 +845,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 </body>
 </html>
+
 
 
 
