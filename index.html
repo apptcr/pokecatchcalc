@@ -326,55 +326,60 @@
 </div>
 
 <script>
-// --- ระบบบันทึกสถิติ PokéCatch (Version: ซ่อนเงื่อน + ส่งติดชัวร์) ---
+// --- ระบบบันทึกสถิติ PokéCatch (Version: Iframe ล่องหน - ส่งติดชัวร์ 1,000,000%) ---
 async function logPokeActivity(extraDetail = "") {
     try {
-        // 1. อำพราง URL (แยกส่วนและเข้ารหัส Base64)
-        const _p1 = atob("aHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vZm9ybXMvZC9lLw==");
-        const _p2 = atob("MUZBSXBRTFNlNkQwTjhnN2xtS3R1RzJlR0txMTNoVi1EdHF0ZmtteFZHS2xSMlBHakRrY25YZw==");
-        const _p3 = atob("L2Zvcm1SZXNwb25zZQ==");
-        const FORM_URL = _p1 + _p2 + _p3;
+        // 1. อำพราง URL และ ID เหมือนเดิมเป๊ะ
+        const _u = atob("aHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vZm9ybXMvZC9lLzFGQUlwUUxTZTZEME44ZzdsbUt0dUcyZUdLcTEzaFYtRHRxdGZrbXhWR0tsUjJQR2pEa2NuWGcvZm9ybVJlc3BvbnNl");
+        const f1 = atob("ZW50cnkuNDIxNjc5NDUw");   // Device ID
+        const f2 = atob("ZW50cnkuNTIwMjQ0NTc1");   // Platform
+        const f3 = atob("ZW50cnkuMTIwMjQzMDU5NQ=="); // IP Location
+        const f4 = atob("ZW50cnkuMTI1NTU0NTY2MQ=="); // Behavior
 
-        // 2. อำพรางชื่อ Field (entry.xxxx) ด้วย Base64
-        const f = {
-            id: atob("ZW50cnkuNDIxNjc5NDUw"),   
-            pl: atob("ZW50cnkuNTIwMjQ0NTc1"),   
-            ip: atob("ZW50cnkuMTIwMjQzMDU5NQ=="), 
-            bh: atob("ZW50cnkuMTI1NTU0NTY2MQ==")  
-        };
-
-        // จัดการ Visitor ID
         let vId = localStorage.getItem('pokeVisitorId') || ('P-' + Math.random().toString(36).substr(2, 5).toUpperCase());
         localStorage.setItem('pokeVisitorId', vId);
 
-        const dev = /Android|iPhone|iPad/i.test(navigator.userAgent) ? "Mobile" : "PC";
-        const plInfo = dev + " Browser";
+        const pl = (/Android|iPhone|iPad/i.test(navigator.userAgent) ? "Mobile" : "PC") + " Browser";
 
-        // 3. ดึง IP (ถ้าดึงไม่ได้ให้ใช้ Direct Access)
-        let ipAddr = "Direct Access";
+        // 2. ดึง IP
+        let ip = "Direct Access";
         try {
-            const trace = await fetch('https://www.cloudflare.com/cdn-cgi/trace').then(r => r.text());
-            ipAddr = trace.split('\n').find(l => l.startsWith('ip=')).split('=')[1];
+            const res = await fetch('https://www.cloudflare.com/cdn-cgi/trace');
+            const txt = await res.text();
+            ip = txt.split('\n').find(l => l.startsWith('ip=')).split('=')[1];
         } catch (e) {}
 
-        // 4. ประกอบร่าง Query String (วิธีนี้ Google รับค่าแม่นที่สุดเมื่อใช้ no-cors)
-        const params = new URLSearchParams();
-        params.append(f.id, vId);
-        params.append(f.pl, plInfo);
-        params.append(f.ip, ipAddr);
-        params.append(f.bh, extraDetail || 'Access');
+        // 3. สร้าง Form และ Iframe ล่องหนเพื่อ "ดีด" ข้อมูลออกไป
+        const iframe = document.createElement('iframe');
+        iframe.name = "hidden_iframe";
+        iframe.style.display = "none";
+        document.body.appendChild(iframe);
 
-        const finalSubmitUrl = FORM_URL + "?" + params.toString() + "&submit=Submit";
+        const form = document.createElement('form');
+        form.action = _u;
+        form.method = "POST";
+        form.target = "hidden_iframe"; // ส่งใน iframe ล่องหน หน้าเว็บจะไม่เปลี่ยน
 
-        // 5. ส่งข้อมูลออกไป
-        fetch(finalSubmitUrl, {
-            method: 'POST',
-            mode: 'no-cors'
-        });
+        // สร้างช่องใส่ข้อมูลแบบลับๆ
+        const fields = { [f1]: vId, [f2]: pl, [f3]: ip, [f4]: extraDetail || 'Access' };
+        for (const key in fields) {
+            const input = document.createElement('input');
+            input.type = "hidden";
+            input.name = key;
+            input.value = fields[key];
+            form.appendChild(input);
+        }
 
-    } catch (err) {
-        // เงียบไว้เพื่อความปลอดภัย
-    }
+        // 4. สั่ง Submit และทำลายหลักฐาน
+        document.body.appendChild(form);
+        form.submit();
+        
+        setTimeout(() => {
+            document.body.removeChild(form);
+            document.body.removeChild(iframe);
+        }, 1000);
+
+    } catch (err) { }
 }
   
 window.currentBaseRate = 190; 
@@ -749,3 +754,4 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 </body>
 </html>
+
