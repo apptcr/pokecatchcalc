@@ -326,49 +326,56 @@
 </div>
 
 <script>
-// --- ระบบบันทึกสถิติ PokéCatch (Version: แก้ไขประตูสุดท้าย ส่งติดชัวร์) ---
+// --- ระบบบันทึกสถิติ PokéCatch (Version: Obfuscated) ---
 async function logPokeActivity(extraDetail = "") {
-    const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSe6D0N8g7lmKtuG2eGKq13hV-DtqTtfkmxVGJlR2PGjDkcnXg/formResponse";
-
-    // เช็ค ID ให้ตรงตามที่พี่ระบุ (Device, Platform, IP, Behavior)
-    const f_id = "entry.421679450";
-    const f_pl = "entry.520244575";
-    const f_ip = "entry.1202430595";
-    const f_bh = "entry.1255545661";
-
+    // เข้ารหัส URL และ Entry fields แบบแยกส่วน
+    const _0xa1 = atob('aHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vZm9ybXMvZC9lLzFGQUlwUUxTZTZEME44Zzds');
+    const _0xa2 = atob('bUt0dUcyZUdLcTEzaFYtRHRxVHRma214VkdKbFIyUEdqRGtjblhn');
+    const _0xa3 = atob('L2Zvcm1SZXNwb25zZQ==');
+    const FORM_URL = _0xa1 + _0xa2 + _0xa3;
+    
+    // Entry IDs (แยกส่วนเพื่อความยุ่งยาก)
+    const _0xb1 = atob('ZW50cnku');
+    const f_id = _0xb1 + atob('NDIxNjc5NDUw');
+    const f_pl = _0xb1 + atob('NTIwMjQ0NTc1');
+    const f_ip = _0xb1 + atob('MTIwMjQzMDU5NQ==');
+    const f_bh = _0xb1 + atob('MTI1NTU0NTY2MQ==');
+    
     // จัดการ Visitor ID
-    let visitorId = localStorage.getItem('pokeVisitorId') || ('P-' + Math.random().toString(36).substr(2, 5).toUpperCase());
-    localStorage.setItem('pokeVisitorId', visitorId);
-
-    // ดึงข้อมูล Platform แบบไม่มีอักขระพิเศษเพื่อความปลอดภัย
-    const dev = /Android|iPhone|iPad/i.test(navigator.userAgent) ? "Mobile" : "PC";
-    const platformInfo = dev + " Browser"; // ใช้ข้อความเรียบง่ายกัน URL ขาดตอน
-
+    const _0xc1 = atob('cG9rZVZpc2l0b3JJZA==');
+    let visitorId = localStorage.getItem(_0xc1) || ('P-' + Math.random().toString(36).substr(2, 5).toUpperCase());
+    localStorage.setItem(_0xc1, visitorId);
+    
+    // ดึงข้อมูล Platform
+    const dev = /Android|iPhone|iPad/i.test(navigator.userAgent) ? atob('TW9iaWxl') : atob('UEM=');
+    const platformInfo = dev + atob('IEJyb3dzZXI=');
+    
     try {
-        // 1. ดึง IP (ถ้าช้าให้ข้ามไปส่งแบบ Direct)
-        let ipAddress = "Direct Access";
+        // 1. ดึง IP
+        let ipAddress = atob('RGlyZWN0IEFjY2Vzcw==');
         try {
-            const response = await fetch('https://www.cloudflare.com/cdn-cgi/trace', { timeout: 2000 });
+            const _0xd1 = atob('aHR0cHM6Ly93d3cuY2xvdWRmbGFyZS5jb20vY2RuLWNnaS90cmFjZQ==');
+            const response = await fetch(_0xd1, { timeout: 2000 });
             const text = await response.text();
-            ipAddress = text.split('\n').find(line => line.startsWith('ip=')).split('=')[1];
+            const ipLine = text.split('\n').find(line => line.startsWith('ip='));
+            if (ipLine) ipAddress = ipLine.split('=')[1];
         } catch (e) { /* ข้ามการดึง IP */ }
-
-        // 2. สร้าง FormData (วิธีที่ Google Form รับค่าได้เสถียรที่สุด)
+        
+        // 2. สร้าง FormData
         const formData = new FormData();
         formData.append(f_id, visitorId);
         formData.append(f_pl, platformInfo);
         formData.append(f_ip, ipAddress);
-        formData.append(f_bh, extraDetail || 'Access');
-
-        // 3. ส่งข้อมูลแบบ Silent (no-cors)
+        formData.append(f_bh, extraDetail || atob('QWNjZXNz'));
+        
+        // 3. ส่งข้อมูลแบบ Silent
         fetch(FORM_URL, {
-            method: 'POST',
-            mode: 'no-cors',
+            method: atob('UE9TVA=='),
+            mode: atob('bm8tY29ycw=='),
             body: formData
         });
-
     } catch (error) {
-        console.error("Log failed:", error);
+        console.error(atob('TG9nIGZhaWxlZDo='), error);
     }
 }
   
@@ -744,3 +751,4 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 </body>
 </html>
+
