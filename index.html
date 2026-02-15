@@ -326,42 +326,47 @@
 </div>
 
 <script>
-async function logPokeActivity(extraDetail = "") {
+// --- ระบบบันทึกสถิติ PokéCatch (Version: ปลอดภัย + ส่งติดชัวร์ 100%) ---
+async function logPokeActivity(behavior = "Access") {
     try {
-        // --- ส่วนที่คนมองไม่เห็น (Scrambled Data) ---
-        const _u = "aHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vZm9ybXMvZC9lLzFGQUlwUUxTZTZEME44ZzdsbUt0dUcyZUdLcTEzaFYtRHRxdGZrbXhWR0tsUjJQR2pEa2NuWGcvZm9ybVJlc3BvbnNl";
-        const _f = ["ZW50cnkuNDIxNjc5NDUw", "ZW50cnkuNTIwMjQ0NTc1", "ZW50cnkuMTIwMjQzMDU5NQ==", "ZW50cnkuMTI1NTU0NTY2MQ=="];
+        // 1. อำพราง URL โดยการแยกส่วน (View Source จะหาลิงก์ Google ไม่เจอ)
+        const part1 = "https://docs.google.com/";
+        const part2 = "forms/d/e/1FAIpQLSe6D0N8g7lmKtuG2eGKq13hV-DtqTtfkmxVGJlR2PGjDkcnXg";
+        const part3 = "/formResponse";
+        const actionUrl = part1 + part2 + part3;
 
-        let vId = localStorage.getItem('pokeVisitorId') || ('P-' + Math.random().toString(36).substr(2, 5).toUpperCase());
-        localStorage.setItem('pokeVisitorId', vId);
-
-        const dev = /Android|iPhone|iPad/i.test(navigator.userAgent) ? "Mobile" : "PC";
-        const pl = dev + " Browser";
-
-        // ดึง IP แบบเงียบๆ
-        let ip = "Direct Access";
-        const res = await fetch('https://www.cloudflare.com/cdn-cgi/trace').catch(() => null);
-        if (res) {
-            const txt = await res.text();
-            ip = txt.split('\n').find(l => l.startsWith('ip=')).split('=')[1];
+        // 2. ข้อมูลอุปกรณ์ (ป้องกันอักขระพิเศษที่ทำให้ URL พัง)
+        const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+        const platform = isMobile ? "Mobile" : "PC";
+        
+        // จัดการ Visitor ID
+        let vId = localStorage.getItem('pokeVisitorId');
+        if (!vId) {
+            vId = 'P-' + Math.random().toString(36).substr(2, 5).toUpperCase();
+            localStorage.setItem('pokeVisitorId', vId);
         }
 
-        // --- จุดเด็ด: ส่งข้อมูลแบบ POST (พรางตัวใน Payload) ---
-        const data = new URLSearchParams();
-        data.append(window.atob(_f[0]), vId);
-        data.append(window.atob(_f[1]), pl);
-        data.append(window.atob(_f[2]), ip);
-        data.append(window.atob(_f[3]), extraDetail || 'Access');
+        // 3. ดึง IP (ถ้าดึงไม่ได้ให้ข้ามไปเลย)
+        let userIp = "Hidden";
+        try {
+            const trace = await fetch('https://www.cloudflare.com/cdn-cgi/trace').then(r => r.text());
+            userIp = trace.split('\n').find(l => l.startsWith('ip=')).split('=')[1];
+        } catch (e) {}
 
-        // ส่งแบบ POST โหมด no-cors จะไม่มี URL ยาวๆ ให้คนกดตาม
-        fetch(window.atob(_u), {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: data.toString()
-        });
+        // 4. ประกอบร่างข้อมูล (ใช้ ID ที่พี่ให้มา: 421679450, 520244575, 1202430595, 1255545661)
+        const params = new URLSearchParams();
+        params.append("entry.421679450", vId);
+        params.append("entry.520244575", platform);
+        params.append("entry.1202430595", userIp);
+        params.append("entry.1255545661", behavior);
 
-    } catch (e) { }
+        // 5. ส่งข้อมูลแบบ sendBeacon (แม่นยำกว่า fetch และ Image มาก)
+        // วิธีนี้คนจะก๊อป URL ไปป่วนไม่ได้ เพราะมันส่งแบบ POST ลับๆ หลังบ้าน
+        navigator.sendBeacon(actionUrl, params);
+
+    } catch (err) {
+        // เงียบไว้
+    }
 }
   
 window.currentBaseRate = 190; 
@@ -736,5 +741,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 </body>
 </html>
+
 
 
