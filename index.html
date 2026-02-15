@@ -47,7 +47,6 @@
       position: relative;
     }
 
-    /* Left Panel */
     .left-panel {
       display: flex;
       flex-direction: column;
@@ -76,7 +75,6 @@
     .info-badges { display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap; justify-content: center; }
     .badge { font-size: 0.75em; padding: 3px 10px; border-radius: 15px; color: white; background: #999; font-weight: 600; text-transform: uppercase;}
 
-    /* Search Input */
     .search-wrapper { width: 100%; position: relative; z-index: 100; margin-bottom: 5px; }
     .search-input {
       width: 100%; padding: 10px 40px 10px 15px; border-radius: 12px; border: 2px solid #eef2f5;
@@ -104,7 +102,6 @@
     }
     .suggestions-list li:hover { background: #ebf4ff; color: var(--accent); }
 
-    /* Result */
     .result-section { text-align: center; width: 100%; margin-top: auto; }
     .percentage { font-size: 4em; font-weight: 800; color: var(--accent); line-height: 1; margin: 10px 0; text-shadow: 0 4px 10px rgba(59,76,202,0.1); }
     .percentage span { font-size: 0.4em; color: #a0aec0; font-weight: 600; }
@@ -118,7 +115,6 @@
     .sim-btn:hover { background: #ff3835; transform: translateY(-2px); box-shadow: 0 12px 25px rgba(255, 83, 80, 0.35); }
     .sim-btn:disabled { background: #cbd5e0; cursor: not-allowed; box-shadow: none; transform: none; }
 
-    /* Right Panel */
     .right-panel {
       display: flex; flex-direction: column; gap: 15px;
       overflow-y: auto; padding-right: 5px;
@@ -165,7 +161,6 @@
     
     .footer-tip { font-size: 0.8em; color: #a0aec0; text-align: right; margin-top: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* Overlay */
     #overlay {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(255,255,255,0.95); display: flex; justify-content: center;
@@ -173,7 +168,6 @@
     }
     #overlay.active { opacity: 1; pointer-events: all; }
     .pokeball-anim-img { width: 100px; height: 100px; object-fit: contain; animation: none; }
-    /* Animation Keyframes defined in JS or CSS class toggles */
     .shake-anim { animation: shake 0.5s ease-in-out infinite; }
     
     .loading-spinner { position: absolute; width: 30px; height: 30px; border: 3px solid #e2e8f0; border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; display: none; }
@@ -189,7 +183,6 @@
     .status-icon-group { display: flex; justify-content: center; gap: 2px; }
     .status-icon { width: 18px; height: 18px; object-fit: contain; }
 
-    /* --- CUSTOM TOOLTIP --- */
     .custom-tooltip {
       position: fixed;
       background: rgba(30, 41, 59, 0.95);
@@ -198,7 +191,6 @@
       border-radius: 8px;
       font-size: 0.85em;
       pointer-events: none;
-      /* แก้ไข Z-Index ให้สูงกว่าทุกอย่างในจักรวาล */
       z-index: 999999; 
       opacity: 0;
       transition: opacity 0.15s;
@@ -206,7 +198,7 @@
       max-width: 250px;
       line-height: 1.5;
       text-align: center;
-      transform: translate(-50%, -100%); /* Center above cursor */
+      transform: translate(-50%, -100%);
       margin-top: -10px;
     }
     .custom-tooltip.visible { opacity: 1; }
@@ -326,32 +318,26 @@
 </div>
 
 <script>
-// --- ระบบบันทึกสถิติ PokéCatch (Version: Obfuscated) ---
 async function logPokeActivity(extraDetail = "") {
-    // เข้ารหัส URL และ Entry fields แบบแยกส่วน
     const _0xa1 = atob('aHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vZm9ybXMvZC9lLzFGQUlwUUxTZTZEME44Zzds');
     const _0xa2 = atob('bUt0dUcyZUdLcTEzaFYtRHRxVHRma214VkdKbFIyUEdqRGtjblhn');
     const _0xa3 = atob('L2Zvcm1SZXNwb25zZQ==');
     const FORM_URL = _0xa1 + _0xa2 + _0xa3;
     
-    // Entry IDs (แยกส่วนเพื่อความยุ่งยาก)
     const _0xb1 = atob('ZW50cnku');
     const f_id = _0xb1 + atob('NDIxNjc5NDUw');
     const f_pl = _0xb1 + atob('NTIwMjQ0NTc1');
     const f_ip = _0xb1 + atob('MTIwMjQzMDU5NQ==');
     const f_bh = _0xb1 + atob('MTI1NTU0NTY2MQ==');
     
-    // จัดการ Visitor ID
     const _0xc1 = atob('cG9rZVZpc2l0b3JJZA==');
     let visitorId = localStorage.getItem(_0xc1) || ('P-' + Math.random().toString(36).substr(2, 5).toUpperCase());
     localStorage.setItem(_0xc1, visitorId);
     
-    // ดึงข้อมูล Platform
     const dev = /Android|iPhone|iPad/i.test(navigator.userAgent) ? atob('TW9iaWxl') : atob('UEM=');
     const platformInfo = dev + atob('IEJyb3dzZXI=');
     
     try {
-        // 1. ดึง IP
         let ipAddress = atob('RGlyZWN0IEFjY2Vzcw==');
         try {
             const _0xd1 = atob('aHR0cHM6Ly93d3cuY2xvdWRmbGFyZS5jb20vY2RuLWNnaS90cmFjZQ==');
@@ -359,16 +345,14 @@ async function logPokeActivity(extraDetail = "") {
             const text = await response.text();
             const ipLine = text.split('\n').find(line => line.startsWith('ip='));
             if (ipLine) ipAddress = ipLine.split('=')[1];
-        } catch (e) { /* ข้ามการดึง IP */ }
+        } catch (e) { }
         
-        // 2. สร้าง FormData
         const formData = new FormData();
         formData.append(f_id, visitorId);
         formData.append(f_pl, platformInfo);
         formData.append(f_ip, ipAddress);
         formData.append(f_bh, extraDetail || atob('QWNjZXNz'));
         
-        // 3. ส่งข้อมูลแบบ Silent
         fetch(FORM_URL, {
             method: atob('UE9TVA=='),
             mode: atob('bm8tY29ycw=='),
@@ -387,8 +371,6 @@ window.allPokemonNames = [];
 window.currentBall = 'poke';
 window.currentProbability = 0;
 
-// --- AUDIO SYSTEM ---
-// ให้สร้างโฟลเดอร์ "sounds" แล้วเอาไฟล์ throw.mp3, hit.mp3, shake.mp3, catch.mp3, escape.mp3 ใส่ลงไป
 const sounds = {
     throw: new Audio('sounds/throw.mp3'),
     hit: new Audio('sounds/hit.mp3'),
@@ -397,12 +379,9 @@ const sounds = {
     escape: new Audio('sounds/escape.mp3')
 };
 
-// Preload (optional, but good practice)
 Object.values(sounds).forEach(s => s.load());
 
 function playSound(name) {
-    // Clone node to allow overlapping sounds (e.g. rapid throws)
-    // or just play. For sim, simpler is better.
     const s = sounds[name];
     if(s) {
         s.currentTime = 0;
@@ -410,7 +389,6 @@ function playSound(name) {
     }
 }
 
-// Random Tips
 const tips = [
   '💡 Tip: ใช้ท่า "False Swipe" ให้เหลือ 1 HP เพื่อโอกาสสูงสุด',
   '💡 Tip: สถานะ "หลับ (Sleep)" และ "แข็ง (Freeze)" เพิ่มโอกาสจับ 2.5 เท่า!',
@@ -429,7 +407,6 @@ const typeColors = {
   steel: '#B7B7CE', fairy: '#D685AD'
 };
 
-// --- TOOLTIP LOGIC ---
 const tooltipEl = document.getElementById('custom-tooltip');
 const tooltipTargets = document.querySelectorAll('[data-tooltip]');
 
@@ -439,7 +416,7 @@ tooltipTargets.forEach(el => {
     tooltipEl.classList.add('visible');
   });
   el.addEventListener('mousemove', (e) => {
-    tooltipEl.style.left = (e.clientX) + 'px'; // Center logic handled in CSS transform
+    tooltipEl.style.left = (e.clientX) + 'px';
     tooltipEl.style.top = (e.clientY - 10) + 'px';
   });
   el.addEventListener('mouseleave', () => {
@@ -447,9 +424,7 @@ tooltipTargets.forEach(el => {
   });
 });
 
-// --- CORE CALCULATION ---
 window.calculate = function() {
-  // ... (Calculation logic same as before) ...
   try {
     const hp = parseInt(document.getElementById('hp-slider').value);
     const ballRadio = document.querySelector('input[name="ball"]:checked');
@@ -459,7 +434,6 @@ window.calculate = function() {
     window.currentBall = ballRadio.value;
     const statusMult = parseFloat(statusEl.value);
 
-    // HP Bar Color Logic
     const hpFill = document.getElementById('hp-fill');
     const hpVal = document.getElementById('hp-val');
     hpFill.style.width = hp + '%';
@@ -538,7 +512,6 @@ window.updateContextPanel = function(ballType) {
   panel.innerHTML = ''; 
   let html = '';
 
-  // ... (Context HTML Logic same as before) ...
   if (ballType === 'quick') html = `<div class="input-group"><label>เทิร์นแรกใช่ไหม ?</label><label class="toggle-switch"><input type="checkbox" id="is-turn-one" onchange="calculate()"><span class="slider"></span></label></div>`;
   else if (ballType === 'timer') html = `<div class="input-group"><label>เทิร์นที่:</label><input type="number" id="turn-count" class="tiny-input" value="1" min="1" max="50" oninput="calculate()"></div>`;
   else if (ballType === 'dusk') html = `<div class="input-group"><label>กลางคืน/ในถ้ำ ใช่ไหม ?</label><label class="toggle-switch"><input type="checkbox" id="is-dark" onchange="calculate()"><span class="slider"></span></label></div>`;
@@ -593,7 +566,6 @@ window.fetchPokemonData = async function(name) {
       badgesEl.appendChild(badge);
     });
 
-    // *** Fix: Force update panel immediately with new data ***
     window.updateContextPanel(window.currentBall); 
     
     calculate();
@@ -608,7 +580,6 @@ window.switchTab = function(tabName) {
   event.target.classList.add('active');
 }
 
-// --- INIT ---
 document.addEventListener('DOMContentLoaded', async () => {
   logPokeActivity("Open Simulation");
   const searchInput = document.getElementById('poke-search');
@@ -683,7 +654,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('hp-slider').addEventListener('input', window.calculate);
   document.querySelectorAll('input[name="status"]').forEach(r => r.addEventListener('change', window.calculate));
 
-  // --- THROW SIMULATION (WITH SOUND) ---
   btnThrow.addEventListener('click', () => {
     logPokeActivity(`Throw: ${window.currentBall} at ${searchInput.value}`);
     const ballEl = document.querySelector('input[name="ball"]:checked');
@@ -696,26 +666,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnThrow.disabled = true; 
     overlay.classList.add('active');
     
-    // Step 1: Throw
     playSound('throw');
     animBallContainer.innerHTML = `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${ballImg}.png" class="pokeball-anim-img" style="transform: scale(0.5); opacity: 0; transition: 0.5s all; margin-bottom: 200px;">`;
     animText.textContent = "ปาบอลไปแล้ว!";
 
-    // Step 2: Hit Ground (0.6s)
     setTimeout(() => {
         playSound('hit');
         animBallContainer.innerHTML = `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${ballImg}.png" class="pokeball-anim-img">`;
         animText.textContent = "...";
     }, 600);
 
-    // Logic: Determine Success
     const success = Math.random() * 100 <= window.currentProbability;
-    const shakes = success ? 3 : Math.floor(Math.random() * 3); // 0, 1, or 2 shakes if fail
+    const shakes = success ? 3 : Math.floor(Math.random() * 3);
 
-    // Function to handle shakes
     const doShake = (count, max) => {
         if (count > max) {
-            // End Sequence
             if (success) {
                 playSound('catch');
                 animText.innerHTML = '<span style="color:#4bc05b">✨ จับสำเร็จ! ✨</span>';
@@ -729,20 +694,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Shake Action
         setTimeout(() => {
             playSound('shake');
             const img = animBallContainer.querySelector('img');
             if(img) {
                 img.classList.remove('shake-anim');
-                void img.offsetWidth; // trigger reflow
+                void img.offsetWidth;
                 img.classList.add('shake-anim');
             }
             doShake(count + 1, max);
         }, 1000);
     };
 
-    // Start Shaking after Hit
     setTimeout(() => {
         doShake(1, shakes);
     }, 1200);
@@ -751,4 +714,5 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 </body>
 </html>
+
 
