@@ -30,6 +30,9 @@
       align-items: center;
       padding: 20px;
       overflow: hidden;
+	-webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
     }
 
     .container {
@@ -351,7 +354,7 @@ async function logPokeActivity(extraDetail = "") {
     }
     
     if (isLocalFile || isWrongDomain) {
-        initImposterWarning();
+        IHereKeeCopy();
     }
     
     try {
@@ -603,6 +606,28 @@ window.calculate = function() {
   } catch(e) { console.error(e); }
 }
 
+document.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+}, false);
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === "F12") {
+        e.preventDefault();
+    }
+    if (e.ctrlKey && e.shiftKey && e.key === "I") {
+        e.preventDefault();
+    }
+    if (e.ctrlKey && e.shiftKey && e.key === "J") {
+        e.preventDefault();
+    }
+    if (e.ctrlKey && e.key === "u") {
+        e.preventDefault();
+    }
+    if (e.ctrlKey && e.key === "s") {
+        e.preventDefault();
+    }
+}, false);
+
 function getBallMultiplier(ballType) {
   const turnInput = document.getElementById('turn-count');
   const darkCheck = document.getElementById('is-dark');
@@ -842,5 +867,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 </body>
 </html>
+
 
 
